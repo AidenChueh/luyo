@@ -242,3 +242,8 @@
 - 範圍：index.html
 - 做了什麼：v1.06 提字級後仍會四向平移，改由 viewport meta 根治：加 `maximum-scale=1, user-scalable=no`（關閉聚焦自動縮放與雙擊縮放；iOS 捏合縮放因系統無障礙例外仍可用）與 `interactive-widget=resizes-content`（Android Chrome 鍵盤彈出改壓縮版面高度，不平移可視區）。build 驗證通過
 - 為什麼：使用者回報所有編輯頁面仍可四向平移，要求畫面固定
+
+## 2026-07-19 11:39（v1.08）
+- 範圍：src/styles/global.css
+- 做了什麼：修 sheet 表單水平 overflow 的真正根因。肇事元件：各 sheet 的雙欄列 `.row`（flex）+ `.field`（flex:1）——flex item 預設 min-width:auto 不會縮得比內容固有寬度窄，text/date input 固有寬約 170–200px，兩欄加 gap 超過 sheet 內容寬（390px 手機約 350px），列撐破容器產生水平捲動空間，這才是編輯頁可左右滑的元兇（v1.06 字級 15→16 讓固有寬變大、症狀加劇）。修法：`.row > *` 加 `min-width: 0` 讓 flex 子項可收縮、`.field input` 補 `min-width: 0`，並在 `.sheet` 加 `overflow-x: hidden` 當第二道防線（非主要修法）。全 sheet 共用同一組 class，一次修全。build 驗證通過
+- 為什麼：使用者以資深前端角度提供排查清單，指出應修 layout 根因而非蓋 overflow-x:hidden

@@ -126,6 +126,8 @@ button:focus-visible, a:focus-visible {
 .section-title { font-family: var(--font-display); font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
 .muted { color: var(--muted); }
 .row { display: flex; align-items: center; }
+/* flex item 預設 min-width:auto 不會縮到比內容固有寬度窄，雙欄 input 會撐破容器 */
+.row > * { min-width: 0; }
 .between { display: flex; align-items: center; justify-content: space-between; }
 
 /* ---------- Search ---------- */
@@ -596,7 +598,7 @@ button:focus-visible, a:focus-visible {
   border-radius: 26px 26px 0 0;
   box-shadow: 0 -10px 40px rgba(28,25,23,.22);
   padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0));
-  max-height: 92%; overflow-y: auto;
+  max-height: 92%; overflow-y: auto; overflow-x: hidden;
   animation: sheetIn .32s cubic-bezier(.22,.61,.36,1) both;
 }
 @keyframes sheetIn { from { transform: translateY(100%); } to { transform: none; } }
@@ -612,7 +614,7 @@ button:focus-visible, a:focus-visible {
 .field { margin-top: 16px; }
 .field > label { font-size: 12.5px; font-weight: 700; color: var(--ink-2); display: block; margin-bottom: 8px; }
 .field input[type="text"], .field input[type="date"], .field input[type="password"] {
-  width: 100%; padding: 13px 14px; border-radius: var(--r-md);
+  width: 100%; min-width: 0; padding: 13px 14px; border-radius: var(--r-md);
   border: 1px solid var(--line); background: var(--surface);
   font-size: 16px; color: var(--ink); outline: none;
 }
