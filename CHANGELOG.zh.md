@@ -252,3 +252,8 @@
 - 範圍：src/styles/global.css、src/components/AddTripSheet.jsx、src/components/StaySheet.jsx
 - 做了什麼：v1.08 的 min-width:0 上線後日期欄位仍超寬，鎖定殘存元兇：WebKit（iOS Safari）的 `input[type="date"]` 原生外觀自帶固有最小寬度，width:100%/min-width:0 都壓不住，必須 `-webkit-appearance: none` 拔掉原生外觀才服從版面。全域對 `.field input[type="date"]` 加 appearance reset + display:block + max-width:100% + min-height:48px（拔外觀後空值時高度會塌，補回與 text input 同高）+ 靠左對齊（含 ::-webkit-date-and-time-value）。日期雙欄列（AddTripSheet 開始/結束日、StaySheet 入住/退房）加 `date-row` class 改用 grid `minmax(0,1fr) minmax(0,1fr)` 強制均分，≤360px 降為單欄。build 驗證通過
 - 為什麼：使用者回報日期欄位仍超出頁面寬度、結束日延伸到畫面外
+
+## 2026-07-19 11:54（v1.10）
+- 範圍：src/components/BottomNav.jsx
+- 做了什麼：修底部 nav active 狀態不切換。根因：從旅程內頁點「地圖/記帳」導向 `/trip/:id/map`、`/trip/:id/expenses`，但 isActive 裡「旅程」的條件 `startsWith('/trip/')` 把這些子頁也算進去、持續高亮，而「地圖/記帳」的 `startsWith('/map')` 配不到。改為：地圖/記帳各自比對頂層路徑或 `/trip/:id/map|expenses`，旅程排除這兩種子頁。build 驗證通過
+- 為什麼：使用者回報在旅程分頁點地圖或記帳後畫面會換但 nav 高亮不動

@@ -15,7 +15,9 @@ export default function BottomNav() {
 
   const isActive = (t) => {
     if (t.path === '/') return pathname === '/'
-    if (t.key === 'trips') return pathname.startsWith('/trips') || pathname.startsWith('/trip/')
+    if (t.key === 'map') return pathname === '/map' || /^\/trip\/[^/]+\/map/.test(pathname)
+    if (t.key === 'expenses') return pathname === '/expenses' || /^\/trip\/[^/]+\/expenses/.test(pathname)
+    if (t.key === 'trips') return (pathname.startsWith('/trips') || pathname.startsWith('/trip/')) && !/^\/trip\/[^/]+\/(map|expenses)/.test(pathname)
     return pathname.startsWith(t.path)
   }
 
