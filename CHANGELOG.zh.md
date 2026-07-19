@@ -222,3 +222,8 @@
 - 範圍：src/styles/tokens.css、src/styles/global.css、src/components/BottomNav.jsx
 - 做了什麼：底部 nav 整體加大——高度 `--nav-h` 64 → 80px（.scroll 底部留白引用同一變數自動跟上），icon 30 → 34，文字 11 → 12px，icon 與文字間距 3 → 4px。build 驗證通過
 - 為什麼：使用者回報 nav icon 仍太小、icon 上方留白不足，判斷是 nav 高度不夠
+
+## 2026-07-19 11:00（v1.04）
+- 範圍：src/styles/global.css
+- 做了什麼：修手機版 nav 內容上下留白不均。根因：全域 box-sizing: border-box 下，`.bottomnav` 的 `height: var(--nav-h)` 是含 padding 的總高，手機上 `padding-bottom: env(safe-area-inset-bottom)`（約 20–34px）從 80px 內扣，內容被擠到上半部、下方留一整段空 padding；桌面 inset 為 0 所以正常。修法：高度改 `calc(var(--nav-h) + env(safe-area-inset-bottom, 0px))` 讓 safe-area 外加。build 驗證通過
+- 為什麼：使用者回報網頁版 nav 正常、手機版上下留白不均（下多上少），要求查明原因
