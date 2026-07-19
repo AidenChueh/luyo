@@ -140,7 +140,8 @@ button:focus-visible, a:focus-visible {
 }
 .search input {
   border: none; outline: none; background: none; flex: 1;
-  font-size: 15px; color: var(--ink);
+  /* 輸入控件 <16px 會觸發 iOS 聚焦自動縮放，一律 ≥16px */
+  font-size: 16px; color: var(--ink);
 }
 .search input::placeholder { color: var(--muted); }
 
@@ -542,7 +543,7 @@ button:focus-visible, a:focus-visible {
 .editor-area {
   width: 100%; min-height: 220px; resize: vertical;
   padding: 14px; border-radius: var(--r-md); border: 1px solid var(--line);
-  background: var(--surface); font-size: 14.5px; line-height: 1.7; color: var(--ink);
+  background: var(--surface); font-size: 16px; line-height: 1.7; color: var(--ink);
   outline: none; font-family: var(--font-body);
 }
 .editor-area:focus { border-color: var(--primary); }
@@ -574,7 +575,7 @@ button:focus-visible, a:focus-visible {
 .addbar { display: flex; gap: 8px; align-items: center; margin-top: 14px; }
 .addbar input {
   flex: 1; padding: 12px 14px; border-radius: var(--r-md);
-  border: 1px solid var(--line); background: var(--surface); font-size: 14.5px; outline: none;
+  border: 1px solid var(--line); background: var(--surface); font-size: 16px; outline: none;
 }
 .addbar input:focus { border-color: var(--primary); }
 .addbar .add-btn { width: 46px; height: 46px; border-radius: var(--r-md); background: var(--primary); color: #fff; display: grid; place-items: center; flex: none; }
@@ -613,7 +614,7 @@ button:focus-visible, a:focus-visible {
 .field input[type="text"], .field input[type="date"], .field input[type="password"] {
   width: 100%; padding: 13px 14px; border-radius: var(--r-md);
   border: 1px solid var(--line); background: var(--surface);
-  font-size: 15px; color: var(--ink); outline: none;
+  font-size: 16px; color: var(--ink); outline: none;
 }
 .field input:focus { border-color: var(--primary); }
 
