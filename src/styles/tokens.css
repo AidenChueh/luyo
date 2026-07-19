@@ -1,0 +1,120 @@
+:root {
+  /* ---- Warm palette ---- */
+  --primary: #E8743B;
+  --primary-soft: #FCEADF;
+  --primary-press: #CF5E29;
+  --accent: #3E7C5A;
+  --accent-soft: #E2EFE8;
+
+  --sand: #F4EBDD;
+  --canvas: #EFE7DB;
+  --bg: #FBF8F4;
+  --surface: #FFFFFF;
+  --surface-2: #FAF6F0;
+
+  --ink: #1C1917;
+  --ink-2: #57534E;
+  --muted: #8A817A;
+  --line: #ECE5DC;
+  --line-strong: #E0D7CB;
+
+  --amber: #D9A03A;
+  --amber-soft: #FBF0D6;
+  --danger: #C2410C;
+  --danger-soft: #FBE4D8;
+
+  /* status */
+  --planning: #6B7C93;
+  --planning-soft: #E7EBF0;
+  --ongoing: #E8743B;
+  --ongoing-soft: #FCEADF;
+  --completed: #3E7C5A;
+  --completed-soft: #E2EFE8;
+
+  /* category colors */
+  --cat-sight: #C2410C;
+  --cat-food: #C77B1E;
+  --cat-transport: #3E7C5A;
+  --cat-shopping: #8C6BB1;
+  --cat-hotel: #2F6E8F;
+  --cat-ticket: #B0813C;
+  --cat-other: #8A817A;
+  --cat-souvenir: #B5557E;
+  --cat-sim: #6B7C93;
+
+  /* ---- Type ---- */
+  --font-display: 'Fraunces', 'Noto Serif TC', Georgia, serif;
+  --font-body: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* ---- Radius ---- */
+  --r-lg: 16px;
+  --r-md: 12px;
+  --r-sm: 8px;
+  --r-pill: 999px;
+
+  /* ---- Soft shadows ---- */
+  --sh-1: 0 1px 2px rgba(28, 25, 23, 0.04), 0 2px 8px rgba(28, 25, 23, 0.05);
+  --sh-2: 0 4px 16px rgba(28, 25, 23, 0.08), 0 1px 3px rgba(28, 25, 23, 0.05);
+  --sh-3: 0 12px 32px rgba(28, 25, 23, 0.14), 0 4px 12px rgba(28, 25, 23, 0.08);
+  --sh-nav: 0 -2px 20px rgba(28, 25, 23, 0.07);
+
+  /* ---- Spacing (8pt) ---- */
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+
+  --app-w: 430px;
+  --nav-h: 64px;
+}
+
+/* ---- Dark theme（暖色深色） ---- */
+[data-theme="dark"] {
+  --primary: #EE8A57;
+  --primary-soft: #3A2A20;
+  --primary-press: #D9663A;
+  --accent: #63A984;
+  --accent-soft: #21302A;
+
+  --sand: #2A241F;
+  --canvas: #14110F;
+  --bg: #1A1714;
+  --surface: #221E1A;
+  --surface-2: #1E1A16;
+
+  --ink: #F4EEE7;
+  --ink-2: #C7BDB2;
+  --muted: #998F84;
+  --line: #322C26;
+  --line-strong: #443B33;
+
+  --amber: #E0AE55;
+  --amber-soft: #33291A;
+  --danger: #E47D54;
+  --danger-soft: #3A241B;
+
+  --planning: #8A99AD;
+  --planning-soft: #262B31;
+  --ongoing: #EE8A57;
+  --ongoing-soft: #3A2A20;
+  --completed: #63A984;
+  --completed-soft: #21302A;
+
+  /* category colors — brightened for ≥4.5:1 contrast on dark --surface #221E1A */
+  --cat-sight: #F05211;
+  --cat-food: #C77B1E;
+  --cat-transport: #4C976E;
+  --cat-shopping: #997CBA;
+  --cat-hotel: #3E91BD;
+  --cat-ticket: #B0813C;
+  --cat-other: #8F867F;
+  --cat-souvenir: #C06E91;
+  --cat-sim: #7A899E;
+
+  --sh-1: 0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.28);
+  --sh-2: 0 4px 16px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.4);
+  --sh-3: 0 14px 36px rgba(0,0,0,.6), 0 4px 12px rgba(0,0,0,.45);
+  --sh-nav: 0 -2px 20px rgba(0,0,0,.4);
+}

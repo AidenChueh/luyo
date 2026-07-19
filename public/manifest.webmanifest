@@ -1,0 +1,17 @@
+{
+  "name": "luyo 旅遊規劃",
+  "short_name": "luyo",
+  "description": "一站式旅遊規劃：行程、地圖、記帳、日誌、清單與旅程回顧。",
+  "lang": "zh-Hant",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF8F4",
+  "theme_color": "#E8743B",
+  "categories": ["travel", "lifestyle", "productivity"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

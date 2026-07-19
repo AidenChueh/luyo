@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>luyo — 設計大綱第一版草稿</title>
+<style>
+  body {
+    font-family: 'Noto Sans TC', -apple-system, sans-serif;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 40px 24px;
+    line-height: 1.75;
+    color: #1C1917;
+    background: #fff;
+  }
+  h1 { font-size: 26px; font-weight: 700; margin: 36px 0 16px; }
+  h2 { font-size: 21px; font-weight: 700; margin: 32px 0 12px; padding-top: 12px; border-top: 1px solid #E7E5E4; }
+  h3 { font-size: 17px; font-weight: 600; margin: 22px 0 8px; }
+  h4 { font-size: 15px; font-weight: 600; margin: 16px 0 6px; color: #44403C; }
+  p { margin: 8px 0; }
+  ul, ol { margin: 8px 0; padding-left: 24px; }
+  li { margin: 4px 0; }
+  blockquote {
+    border-left: 3px solid #D6D3D1;
+    padding: 8px 16px;
+    margin: 10px 0;
+    background: #FAFAF9;
+    color: #44403C;
+    font-style: normal;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 14px; }
+  th, td { border: 1px solid #E7E5E4; padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: #F5F5F4; font-weight: 600; }
+  hr { border: none; border-top: 1px solid #E7E5E4; margin: 28px 0; }
+  strong { font-weight: 600; }
+  code { background: #F5F5F4; padding: 1px 5px; border-radius: 4px; font-size: 90%; }
+  .meta { color: #78716C; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<h1>luyo — 設計大綱第一版草稿</h1>
+<p class="meta">版本 0.1 ｜ 2026-06-14 ｜ 標註式大綱（annotated outline）｜ 狀態：設計階段，待確認後進入實作</p>
+
+<blockquote>
+本文件是整個 App 的第一版結構草稿，目的是把範圍、設計基調、每個畫面的功能與資料欄位攤開，方便逐項確認與排優先序。<br>
+標註方式：一般條列為「功能 / 內容」；以引言區塊（左側灰線）標示的是「設計註記 / 決策待確認」。
+</blockquote>
+
+<h2>0. 文件導讀</h2>
+<ul>
+  <li><strong>第 1 部</strong>：產品定位與設計系統（配色、圓角、陰影、字體、元件、無障礙）</li>
+  <li><strong>第 2 部</strong>：資訊架構與導航（5 大底部分頁、各模組歸屬）</li>
+  <li><strong>第 3 部</strong>：功能模組逐一展開（每模組：目的 / 版面 / 欄位 / 互動 / 註記）</li>
+  <li><strong>第 4 部</strong>：資料模型草稿（實體與關聯）</li>
+  <li><strong>第 5 部</strong>：進階與技術功能（離線 / PWA / 同步 / 匯出 / 通知）</li>
+  <li><strong>第 6 部</strong>：開發階段建議（MVP → 完整版的分批落地）</li>
+</ul>
+
+<hr>
+
+<h1>第 1 部 — 產品定位與設計系統</h1>
+
+<h2>1.1 產品定位</h2>
+<ul>
+  <li>一站式個人旅遊工具：涵蓋「規劃 → 執行 → 記錄 → 回顧」完整生命週期</li>
+  <li>核心使用情境：行前籌備、旅途中即時記帳與看行程、行後生成總結報告</li>
+  <li>單人為主、支援同行者協作（分帳、共同編輯）</li>
+</ul>
+
+<h2>1.2 設計原則（Apple HIG 為骨幹）</h2>
+<ul>
+  <li><strong>Clarity 清晰</strong>：內容優先，文字易讀、圖示語意明確、留白充足</li>
+  <li><strong>Deference 謙遜</strong>：UI 不搶戲，照片與內容是主角；柔和陰影而非重邊框</li>
+  <li><strong>Depth 層次</strong>：用層級、轉場與動態建立空間感（卡片浮起、頁面滑入）</li>
+  <li><strong>直覺導航</strong>：底部 5 分頁 + 頁內快速入口，任何功能 ≤ 2 次點擊可達</li>
+  <li><strong>無障礙</strong>：見 1.7</li>
+</ul>
+
+<h2>1.3 視覺風格混搭</h2>
+<table>
+  <tr><th>來源</th><th>借鏡之處</th></tr>
+  <tr><td>Airbnb</td><td>大圖卡片、圓角、柔和陰影、溫暖親近的攝影感、清楚的價格/資訊層級</td></tr>
+  <tr><td>Google Travel</td><td>結構化行程時間軸、地圖整合、資訊密度與分類標籤的處理</td></tr>
+  <tr><td>Notion</td><td>乾淨的排版、區塊化內容、Markdown 編輯、低調的灰階介面框架</td></tr>
+</table>
+<blockquote>
+原則：放鬆、乾淨、專業的旅遊感。<strong>明確排除</strong>過度漸層光暈、紫藍科技風、塞滿的霓虹色塊、無意義的 3D 與「AI 感」裝飾。照片用真實旅遊攝影風，不用合成插畫味重的素材。
+</blockquote>
+
+<h2>1.4 配色（暖色系）</h2>
+<blockquote>以下為提案色票，待確認；皆需通過對比度檢查（見無障礙）。</blockquote>
+<table>
+  <tr><th>角色</th><th>色票（提案）</th><th>用途</th></tr>
+  <tr><td>主色 Primary</td><td>暖橘陶土 <code>#E8743B</code></td><td>主要按鈕、選中態、重點強調</td></tr>
+  <tr><td>輔色 Secondary</td><td>暖砂米 <code>#F4EBDD</code></td><td>區塊底、標籤底</td></tr>
+  <tr><td>點綴 Accent</td><td>森林綠 <code>#3E7C5A</code></td><td>正向狀態、完成、結餘安全</td></tr>
+  <tr><td>背景 Background</td><td>暖白 <code>#FBF8F4</code> / 純白 <code>#FFFFFF</code></td><td>頁面底、卡片底</td></tr>
+  <tr><td>文字 Text</td><td>暖黑 <code>#1C1917</code> / 次要 <code>#78716C</code></td><td>標題 / 內文 / 註解</td></tr>
+  <tr><td>狀態-警示</td><td>琥珀 <code>#D9A03A</code></td><td>預算 75–90% 提醒</td></tr>
+  <tr><td>狀態-危險</td><td>磚紅 <code>#C2410C</code></td><td>超支、衝突警告</td></tr>
+</table>
+<h4>狀態色（旅程 / 行程）</h4>
+<ul>
+  <li>規劃中 Planning：藍灰 <code>#6B7C93</code></li>
+  <li>進行中 Ongoing：主色暖橘 <code>#E8743B</code></li>
+  <li>已完成 Completed：森林綠 <code>#3E7C5A</code></li>
+</ul>
+<h4>分類色（行程 / 記帳分類）</h4>
+<p>每個分類一個低飽和暖色 + 對應圖示（景點、餐廳、交通、購物、住宿…），全 App 一致複用。</p>
+
+<h2>1.5 形狀、陰影、間距、字體</h2>
+<ul>
+  <li><strong>圓角</strong>：卡片 / 圖片 / 大容器 16px；按鈕 / 輸入框 12px；標籤 / 小元件 8px；頭像圓形</li>
+  <li><strong>陰影</strong>：柔和多層，低不透明度（例 <code>0 4px 16px rgba(28,25,23,0.08)</code>）；不用硬黑邊；浮起卡片陰影加深</li>
+  <li><strong>間距</strong>：8pt 網格（4 / 8 / 12 / 16 / 24 / 32）</li>
+  <li><strong>字體</strong>：系統字（<code>-apple-system</code> / SF / Roboto）+ <code>Noto Sans TC</code>；標題粗、內文常規；數字（金額）可用等寬對齊</li>
+  <li><strong>圖示</strong>：單一線性圖示集（如 SF Symbols / Lucide），線寬一致</li>
+</ul>
+
+<h2>1.6 共用元件庫（Design System）</h2>
+<ul>
+  <li>按鈕：主要 / 次要 / 文字 / 圖示 / 浮動操作鈕（FAB，用於「新增」）</li>
+  <li>卡片：旅程卡、地點卡、行程項目卡、花費卡、機票卡、住宿卡</li>
+  <li>標籤 Chip / Badge：分類、狀態、標籤（must-go / 替代 / 已完成）</li>
+  <li>進度條 / 環形圖：預算用量</li>
+  <li>輸入元件：文字、金額（含幣別選擇）、日期 / 時間、評分（星等）、心情、照片上傳</li>
+  <li>清單列：可勾選、可拖曳、左右滑出操作（編輯 / 刪除 / 收藏）</li>
+  <li>底部彈出 Sheet、Modal、Toast、空狀態、載入骨架屏</li>
+  <li>時間軸元件（行程、日誌共用）</li>
+</ul>
+
+<h2>1.7 無障礙與響應式</h2>
+<ul>
+  <li><strong>對比度</strong>：文字 ≥ WCAG AA（4.5:1），大字 ≥ 3:1</li>
+  <li><strong>觸控目標</strong>：≥ 44×44pt</li>
+  <li><strong>動態字體</strong>：支援系統字級縮放，版面不破</li>
+  <li><strong>語意標籤</strong>：VoiceOver / TalkBack 朗讀標籤、圖示有替代文字</li>
+  <li><strong>不只靠顏色</strong>傳達狀態：同時用圖示 / 文字（色盲友善）</li>
+  <li><strong>深色模式</strong>：完整對應（見進階功能），暖色調在深色下降飽和</li>
+  <li><strong>Mobile-first 斷點</strong>：手機（單欄）→ 平板（雙欄）→ 桌面（側欄 + 主區）；底部導航在大螢幕可轉為側邊導航</li>
+</ul>
+
+<hr>
+
+<h1>第 2 部 — 資訊架構與導航</h1>
+
+<h2>2.1 底部導航（5 分頁）</h2>
+<table>
+  <tr><th>分頁</th><th>進入點</th><th>包含模組</th></tr>
+  <tr><td>Home 首頁</td><td>儀表板，所有旅程</td><td>3.1 首頁儀表板</td></tr>
+  <tr><td>Trips 旅程</td><td>單一旅程的所有內容</td><td>3.2 旅程總覽 → 3.3~3.13 各子模組</td></tr>
+  <tr><td>Map 地圖</td><td>當前旅程地圖</td><td>3.5 地圖檢視</td></tr>
+  <tr><td>Expenses 記帳</td><td>快速記一筆 / 看花費</td><td>3.6 記帳 + 3.7 預算</td></tr>
+  <tr><td>Profile 我的</td><td>個人 / 設定 / 進階</td><td>同行者、設定、深色模式、匯出、同步、AI 設定</td></tr>
+</table>
+<blockquote>
+決策待確認：Map 與 Expenses 放在全域底部導航，預設綁定「目前進行中 / 最近開啟的旅程」。若沒有選定旅程，點進去引導先選旅程。中央可放 FAB 快速「記一筆 / 加行程」。
+</blockquote>
+
+<h2>2.2 導航層級</h2>
+<ul>
+  <li><strong>L1</strong>：底部 5 分頁</li>
+  <li><strong>L2</strong>：旅程總覽（3.2）作為單一旅程的 hub，內含 6 個快速入口</li>
+  <li><strong>L3</strong>：各功能模組（行程 / 地圖 / 記帳 / 日誌 / 清單 / 地點…）</li>
+  <li><strong>L4</strong>：明細與編輯頁（單一行程項目、單筆花費、單篇日誌…）</li>
+</ul>
+
+<hr>
+
+<h1>第 3 部 — 功能模組</h1>
+<blockquote>每個模組格式：<strong>目的</strong> → <strong>版面結構</strong> → <strong>欄位 / 資料</strong> → <strong>互動 / 邏輯</strong> → <strong>設計註記</strong>。</blockquote>
+
+<h2>3.1 首頁儀表板 Home Dashboard</h2>
+<h4>目的</h4>
+<p>一眼掌握所有旅程狀態，快速進入或建立旅程。</p>
+<h4>版面結構</h4>
+<ul>
+  <li>頂部：問候 / 搜尋列</li>
+  <li>進行中 / 即將出發旅程：大封面卡（含倒數）置頂</li>
+  <li>其餘旅程：卡片列表 / 網格</li>
+  <li>右下 FAB：新增旅程</li>
+</ul>
+<h4>每張旅程卡欄位</h4>
+<ul>
+  <li>封面照片、旅程名稱、國家 / 城市</li>
+  <li>日期區間、總天數、出發倒數（D-day）</li>
+  <li>預算 / 已花 / 結餘（小型進度條）</li>
+  <li>狀態徽章：規劃中 / 進行中 / 已完成</li>
+  <li>收藏星標</li>
+</ul>
+<h4>互動 / 邏輯</h4>
+<ul>
+  <li>搜尋：依名稱 / 國家 / 城市</li>
+  <li>排序：出發日 / 建立日 / 名稱 / 預算</li>
+  <li>篩選：狀態、收藏</li>
+  <li>收藏：星標置頂</li>
+  <li>封存：完成的旅程歸入「封存」不佔主列表，可還原</li>
+  <li>狀態自動推斷：依今日與日期區間自動切換規劃中 / 進行中 / 已完成（可手動覆寫）</li>
+</ul>
+<blockquote>設計註記：進行中旅程用主色描邊 + 倒數醒目；已完成旅程降低彩度。空狀態引導「建立第一趟旅程」並可選 AI 規劃。</blockquote>
+
+<h2>3.2 旅程總覽 Trip Overview</h2>
+<h4>目的</h4>
+<p>單一旅程的中央樞紐，總覽 + 通往所有子功能。</p>
+<h4>版面結構</h4>
+<ul>
+  <li>Hero 大圖橫幅：封面 + 目的地 + 日期區間 + 天數 + 出發倒數</li>
+  <li>天氣卡：目的地天氣（當前 / 預報）</li>
+  <li>預算進度條 + 花費統計（總額 / 已花 / 結餘 / 百分比）</li>
+  <li>關鍵數據：已完成行程數、收藏地點數、相片數</li>
+  <li>6 個快速入口：行程、地圖、記帳、日誌、清單、地點</li>
+</ul>
+<h4>互動 / 邏輯</h4>
+<ul>
+  <li>快速入口點擊進入對應模組（L3）</li>
+  <li>倒數結束（進行中）改顯示「Day N / 共 M 天」</li>
+  <li>天氣串接外部 API（待選供應商）</li>
+</ul>
+<blockquote>設計註記：此頁是「看板」不是「操作台」——資訊卡為主、動作集中在快速入口。</blockquote>
+
+<h2>3.3 行程規劃 Itinerary Planning</h2>
+<h4>目的</h4>
+<p>逐日時間軸排程，是 App 的核心。</p>
+<h4>版面結構</h4>
+<ul>
+  <li>頂部：日期分頁 / 橫向日曆（Day 1、Day 2…）</li>
+  <li>主體：當日垂直時間軸，依時間排列的行程項目卡</li>
+  <li>項目間自動顯示「空檔 X 小時」與「移動時間」</li>
+</ul>
+<h4>單一行程項目欄位</h4>
+<ul>
+  <li>開始 / 結束時間</li>
+  <li>標題、地點（連結地點庫）</li>
+  <li>Google Maps 連結</li>
+  <li>分類：景點 / 餐廳 / 交通 / 購物 / 住宿（含分類色與圖示）</li>
+  <li>備註、預估花費 / 實際花費</li>
+  <li>照片、評分（星等）</li>
+</ul>
+<h4>互動 / 邏輯</h4>
+<ul>
+  <li>拖曳排序、調整時間</li>
+  <li>複製項目到其他日期</li>
+  <li>自動計算空檔時間</li>
+  <li>時間衝突警示（同時段重疊 → 磚紅提示）</li>
+  <li>項目與記帳連動：填實際花費可一鍵建立花費紀錄</li>
+  <li>項目與地點庫連動：選地點自動帶入名稱 / 地圖 / 分類</li>
+</ul>
+<blockquote>設計註記：時間軸左側為時間刻度，右側卡片；分類色作為卡片左緣色條。衝突與空檔用非紅色以外的輔助圖示，避免只靠顏色。</blockquote>
+
+<h2>3.4 地圖檢視 Map View</h2>
+<h4>目的</h4>
+<p>空間視角看地點與每日動線。</p>
+<h4>內容 / 標記類型</h4>
+<ul>
+  <li>景點、餐廳、飯店、車站、機場（不同圖示 / 顏色標記）</li>
+</ul>
+<h4>功能</h4>
+<ul>
+  <li>地圖標記（依分類）</li>
+  <li>路線規劃、移動時間、距離計算</li>
+  <li>每日動線視覺化（依 Day 篩選，連線顯示順序）</li>
+  <li>點標記 → 彈出地點卡（可跳行程 / 地點庫）</li>
+</ul>
+<blockquote>設計註記：地圖供應商（Google Maps / Mapbox）待選，影響成本與離線能力。每日動線用該日分類色的連線。</blockquote>
+
+<h2>3.5 記帳 Expense Tracker</h2>
+<h4>目的</h4>
+<p>旅途即時記帳 + 花費分析。</p>
+<h4>分類</h4>
+<p>機票、住宿、交通、餐飲、門票、購物、伴手禮、保險、網卡 / SIM、其他（各有圖示與色）。</p>
+<h4>單筆欄位</h4>
+<ul>
+  <li>日期、金額（多幣別）、分類、備註、照片（收據）、地點</li>
+  <li>付款人 / 分攤對象（連同行者，供分帳）</li>
+</ul>
+<h4>統計</h4>
+<ul>
+  <li>總額、每日花費、各分類佔比、每人平均、剩餘預算</li>
+</ul>
+<h4>圖表</h4>
+<ul>
+  <li>圓餅圖（分類佔比）、長條圖（每日 / 分類）、趨勢圖（累積 / 折線）</li>
+</ul>
+<h4>互動 / 邏輯</h4>
+<ul>
+  <li>多幣別：每筆記原始幣別，依匯率換算主幣別彙總</li>
+  <li>快速記一筆（底部 Sheet，金額 + 分類兩步完成）</li>
+  <li>與行程項目、預算（3.6）雙向連動</li>
+</ul>
+<blockquote>設計註記：記帳是高頻動作，入口要極短；金額輸入用大數字鍵盤，幣別預設旅程主幣別。</blockquote>
+
+<h2>3.6 預算管理 Budget Management</h2>
+<h4>目的</h4>
+<p>設定與監控總 / 每日預算，及早預警超支。</p>
+<h4>功能</h4>
+<ul>
+  <li>設定總預算、每日預算</li>
+  <li>顯示用量百分比、剩餘、超支金額</li>
+  <li>分級警示：50% / 75% / 90% / 超支（對應琥珀 → 磚紅 + 推播）</li>
+  <li>分類預算（選配）：各分類設上限</li>
+</ul>
+<blockquote>設計註記：與記帳同源資料；警示用環形進度 + 文字 + 圖示三重表達。可接 AI 預算分析（3.14）。</blockquote>
+
+<h2>3.7 旅遊日誌 Travel Journal</h2>
+<h4>目的</h4>
+<p>逐日記錄心情與見聞。</p>
+<h4>單篇欄位</h4>
+<ul>
+  <li>標題、內文（Markdown）、心情評分、照片 / 影片、日期</li>
+</ul>
+<h4>互動 / 邏輯</h4>
+<ul>
+  <li>Markdown 編輯 + 即時預覽</li>
+  <li>自動儲存（草稿）</li>
+  <li>時間軸檢視（依日期串起）</li>
+</ul>
+<blockquote>設計註記：編輯體驗對齊 Notion——乾淨、區塊化、低干擾。心情評分用表情 / 圖示等級。</blockquote>
+
+<h2>3.8 相簿 Photo Gallery</h2>
+<h4>目的</h4>
+<p>集中瀏覽旅程照片。</p>
+<h4>功能</h4>
+<ul>
+  <li>依日分組</li>
+  <li>瀑布流（masonry）版面</li>
+  <li>大圖預覽、說明文字（caption）、地點標籤</li>
+</ul>
+<blockquote>設計註記：照片是主角，介面退到背景（深色預覽底）。可從行程 / 日誌的照片聚合而來。</blockquote>
+
+<h2>3.9 行前準備中心 Preparation Center</h2>
+<h4>3.9.1 待辦清單 To-do</h4>
+<ul>
+  <li>項目（簽證、保險、換匯、餐廳訂位…）、優先級、截止日、狀態</li>
+</ul>
+<h4>3.9.2 打包清單 Packing</h4>
+<ul>
+  <li>分類：證件、衣物、電子、盥洗、藥品；可勾選（checkbox）</li>
+</ul>
+<h4>3.9.3 購物清單 Shopping</h4>
+<ul>
+  <li>品名、數量、預估價格、是否已購</li>
+</ul>
+<blockquote>設計註記：三種清單共用「可勾選清單列」元件；待辦可接近截止日推播提醒。提供預設範本（首次建立旅程帶入常見項目）。</blockquote>
+
+<h2>3.10 機票管理 Flight Manager</h2>
+<h4>欄位（去程 / 回程卡片）</h4>
+<ul>
+  <li>航空公司、航班編號</li>
+  <li>起飛 / 抵達時間、航廈 Terminal、座位、行李額度</li>
+</ul>
+<blockquote>設計註記：登機證式卡片版型（Airbnb 卡片感 + 票券分隔線）。去程 / 回程並列或分頁。可連動行程時間軸的交通項目。</blockquote>
+
+<h2>3.11 住宿 Accommodation</h2>
+<h4>欄位</h4>
+<ul>
+  <li>名稱、地址、電話、訂房編號</li>
+  <li>入 / 退房時間、價格、官網連結、地圖位置</li>
+  <li>房間照片、已收藏住宿</li>
+</ul>
+<blockquote>設計註記：地圖位置與 3.4 地圖共用；可一鍵把入退房加入行程時間軸。</blockquote>
+
+<h2>3.12 地點庫 Places Library</h2>
+<h4>欄位</h4>
+<ul>
+  <li>類型：景點、餐廳、咖啡廳、商場</li>
+  <li>標籤：必去 must-go / 替代 alternative / 已完成 completed</li>
+  <li>照片、評分、備註、Google Maps 連結</li>
+</ul>
+<h4>互動</h4>
+<ul>
+  <li>收藏的地點可直接加入行程（3.3）與地圖（3.4）</li>
+  <li>依類型 / 標籤篩選</li>
+</ul>
+<blockquote>設計註記：地點庫是行程與地圖的「素材庫」，一處維護、多處複用。</blockquote>
+
+<h2>3.13 同行者 Companions</h2>
+<h4>欄位 / 功能</h4>
+<ul>
+  <li>新增同行者：姓名、頭像、聯絡方式</li>
+  <li>分帳：花費可指定付款人與分攤對象</li>
+  <li>債務追蹤：誰欠誰多少，結算建議（最少筆數還清）</li>
+</ul>
+<blockquote>設計註記：與記帳（3.5）緊密耦合；提供「誰付 / 大家平分 / 自訂比例」三種分攤模式。</blockquote>
+
+<h2>3.14 旅程總結 Trip Summary（行後自動生成）</h2>
+<h4>內容</h4>
+<ul>
+  <li>總天數、總花費、每日平均花費</li>
+  <li>造訪地點數、餐廳數、照片數、最愛地點</li>
+  <li>視覺化報告卡（社群分享格式，例如 9:16 / 1:1）</li>
+</ul>
+<h4>互動</h4>
+<ul>
+  <li>旅程完成後自動產生</li>
+  <li>生成可分享圖卡 → 匯出 / 分享</li>
+</ul>
+<blockquote>設計註記：報告卡走「精選回顧」風（大數字 + 代表照片 + 暖色版型），不堆砌資訊。資料全部來自既有模組彙總。</blockquote>
+
+<h2>3.15 AI 功能</h2>
+<h4>3.15.1 AI 行程規劃</h4>
+<ul>
+  <li>輸入：目的地、天數、預算（及偏好 / 同行人數）</li>
+  <li>輸出：行程建議、預算分配、每日排程草稿（可一鍵套入 3.3）</li>
+</ul>
+<h4>3.15.2 AI 預算分析</h4>
+<ul>
+  <li>找出高花費分類、預算風險、超支警示與建議</li>
+</ul>
+<h4>3.15.3 AI 旅遊回顧</h4>
+<ul>
+  <li>生成每日亮點、花費摘要、旅遊故事（敘事文，可放入日誌 / 總結）</li>
+</ul>
+<blockquote>設計註記：AI 為「輔助」而非主導——所有 AI 產出皆為可編輯草稿，使用者保留最終決定。模型供應商與成本待定（建議用最新 Claude 模型）。需處理離線 / 失敗的降級。</blockquote>
+
+<hr>
+
+<h1>第 4 部 — 資料模型草稿</h1>
+<blockquote>初版實體關聯，供後續資料庫 / 同步設計參考，欄位以前述模組為準。</blockquote>
+<table>
+  <tr><th>實體</th><th>關鍵欄位</th><th>關聯</th></tr>
+  <tr><td>Trip 旅程</td><td>名稱、封面、國家 / 城市、起訖日、主幣別、總預算 / 每日預算、狀態、收藏、封存</td><td>1 對多 → 幾乎所有實體</td></tr>
+  <tr><td>ItineraryItem 行程項目</td><td>日期、起訖時間、標題、分類、預估 / 實際花費、評分、照片、Maps 連結</td><td>屬 Trip；可連 Place、Expense</td></tr>
+  <tr><td>Expense 花費</td><td>日期、金額、幣別、分類、備註、照片、地點、付款人、分攤</td><td>屬 Trip；連 Companion</td></tr>
+  <tr><td>Budget 預算</td><td>總額、每日額、（分類額）</td><td>屬 Trip；彙總 Expense</td></tr>
+  <tr><td>JournalEntry 日誌</td><td>日期、標題、內文(MD)、心情、媒體</td><td>屬 Trip</td></tr>
+  <tr><td>Photo 照片</td><td>檔案、說明、地點、日期</td><td>屬 Trip；來源可為行程 / 日誌</td></tr>
+  <tr><td>Place 地點</td><td>類型、標籤、評分、備註、Maps、座標</td><td>屬 Trip（或全域收藏）</td></tr>
+  <tr><td>Flight 機票</td><td>航司、航班、起訖、航廈、座位、行李</td><td>屬 Trip</td></tr>
+  <tr><td>Accommodation 住宿</td><td>名稱、地址、訂房號、入退房、價格、座標</td><td>屬 Trip</td></tr>
+  <tr><td>ChecklistItem 清單</td><td>類型(待辦/打包/購物)、內容、優先 / 截止 / 數量 / 價格、狀態</td><td>屬 Trip</td></tr>
+  <tr><td>Companion 同行者</td><td>姓名、頭像、聯絡</td><td>屬 Trip；連 Expense 分帳</td></tr>
+  <tr><td>Currency / Rate 匯率</td><td>幣別、匯率、時間</td><td>供換算與歷史</td></tr>
+</table>
+
+<hr>
+
+<h1>第 5 部 — 進階與技術功能</h1>
+<ul>
+  <li><strong>離線模式</strong>：本地優先，無網路可看 / 可記，恢復連線再同步</li>
+  <li><strong>多幣別換算 + 匯率歷史</strong>：每筆記原幣別，保存當下匯率，提供歷史查詢</li>
+  <li><strong>匯出</strong>：PDF / Excel（行程、花費、總結）</li>
+  <li><strong>旅程分享 + 協作編輯</strong>：產生分享連結，多人共編（與同行者）</li>
+  <li><strong>深色模式</strong>：完整對應，暖色於深色降飽和</li>
+  <li><strong>PWA 支援</strong>：可安裝、離線快取</li>
+  <li><strong>雲端同步</strong>：跨裝置；需處理衝突合併</li>
+  <li><strong>推播通知</strong>：預算警示、待辦截止、出發倒數</li>
+  <li><strong>倒數小工具 Widget</strong>：桌面 / 鎖屏顯示出發倒數</li>
+</ul>
+<blockquote>
+技術註記（待決策）：前端框架、地圖供應商、後端 / 同步方案（自架 vs BaaS）、AI 供應商皆未定。離線 + 雲端同步是架構成本最高的一塊，建議早期就決定「本地優先」資料層。
+</blockquote>
+
+<hr>
+
+<h1>第 6 部 — 開發階段建議</h1>
+<blockquote>把龐大範圍切成可交付批次，避免一次做完。順序可調。</blockquote>
+<h3>MVP（先能用）</h3>
+<ul>
+  <li>旅程 CRUD + 首頁儀表板（3.1）</li>
+  <li>旅程總覽（3.2）</li>
+  <li>行程規劃時間軸（3.3，先不含拖曳）</li>
+  <li>記帳 + 基礎統計（3.5）+ 預算（3.6）</li>
+  <li>設計系統與底部導航骨架</li>
+</ul>
+<h3>第二批（體驗強化）</h3>
+<ul>
+  <li>地圖（3.4）、地點庫（3.12）、住宿（3.11）、機票（3.10）</li>
+  <li>行程拖曳 / 複製 / 衝突警示</li>
+  <li>日誌（3.7）+ 相簿（3.8）</li>
+  <li>行前準備清單（3.9）</li>
+</ul>
+<h3>第三批（進階 / 加值）</h3>
+<ul>
+  <li>同行者分帳（3.13）、旅程總結報告卡（3.14）</li>
+  <li>AI 三大功能（3.15）</li>
+  <li>離線 / PWA / 雲端同步 / 通知 / 匯出 / 深色模式（第 5 部）</li>
+</ul>
+
+<hr>
+<h2>待確認決策清單</h2>
+<ol>
+  <li>配色色票是否採用（暖橘陶土主色 + 森林綠點綴）？</li>
+  <li>底部導航是否就是 Home / Trips / Map / Expenses / Profile，且 Map / Expenses 綁定當前旅程？</li>
+  <li>技術棧：前端框架、地圖供應商、後端 / 同步、AI 供應商。</li>
+  <li>MVP 範圍是否照第 6 部第一批？</li>
+  <li>協作 / 雲端同步是否列入第一階段（影響架構）？</li>
+</ol>
+
+<p class="meta">— 第一版草稿結束。確認方向後，下一步可做：(a) 細化任一模組的線框圖 / 元件規格；(b) 制定技術棧；(c) 直接做 MVP 的高保真 UI 原型。</p>
+
+</body>
+</html>

@@ -1,0 +1,350 @@
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { expenses as seedExpenses, trips as seedTrips, prep as seedPrep, prepTemplate, itinerary as seedItin, places as seedPlaces, journal as seedJournal, flights as seedFlights, stays as seedStays, photos as seedPhotos, companions as seedCompanions } from './data/seed'
+import { removeRecap, removePlan, removeBudgetAnalysis } from './lib/ai'
+
+const StoreCtx = createContext(null)
+const EXP_KEY = 'luyo:expenses:v1'
+const COMP_KEY = 'luyo:companions:v1'
+const TRIP_KEY = 'luyo:trips:v2'
+const PREP_KEY = 'luyo:prep:v1'
+const ITIN_KEY = 'luyo:itinerary:v1'
+const PLACE_KEY = 'luyo:places:v1'
+const JOURNAL_KEY = 'luyo:journal:v1'
+const FLIGHT_KEY = 'luyo:flights:v1'
+const STAY_KEY = 'luyo:stays:v1'
+const PHOTO_KEY = 'luyo:photos:v1'
+
+const seedExpState = () => {
+  const init = {}
+  for (const k of Object.keys(seedExpenses)) init[k] = [...seedExpenses[k]]
+  return init
+}
+const seedPrepState = () => JSON.parse(JSON.stringify(seedPrep))
+const seedItinState = () => JSON.parse(JSON.stringify(seedItin))
+const seedPlaceState = () => JSON.parse(JSON.stringify(seedPlaces))
+const seedJournalState = () => JSON.parse(JSON.stringify(seedJournal))
+const seedFlightState = () => JSON.parse(JSON.stringify(seedFlights))
+const seedStayState = () => JSON.parse(JSON.stringify(seedStays))
+const seedPhotoState = () => JSON.parse(JSON.stringify(seedPhotos))
+const seedCompState = () => JSON.parse(JSON.stringify(seedCompanions))
+// 自建旅程 + 種子旅程的覆寫 / 刪除（種子陣列本身不可變，故用 overrides/deleted）
+const emptyTripData = () => ({ custom: [], overrides: {}, deleted: [] })
+
+const load = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key)
+    if (raw) return JSON.parse(raw)
+  } catch {
+    // 解析失敗 → 回 fallback
+  }
+  return fallback()
+}
+
+const uid = (prefix) => prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
+
+let storageWarned = false
+const persist = (key, value) => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch {
+    if (!storageWarned) {
+      storageWarned = true
+      alert('儲存空間已滿，最近的變更可能不會被保存')
+    }
+  }
+}
+
+export function StoreProvider({ children }) {
+  const [byTrip, setByTrip] = useState(() => load(EXP_KEY, seedExpState))
+  const [tripData, setTripData] = useState(() => load(TRIP_KEY, emptyTripData))
+  const [prepByTrip, setPrepByTrip] = useState(() => load(PREP_KEY, seedPrepState))
+  const [itinByTrip, setItinByTrip] = useState(() => load(ITIN_KEY, seedItinState))
+  const [placeByTrip, setPlaceByTrip] = useState(() => load(PLACE_KEY, seedPlaceState))
+  const [journalByTrip, setJournalByTrip] = useState(() => load(JOURNAL_KEY, seedJournalState))
+  const [flightByTrip, setFlightByTrip] = useState(() => load(FLIGHT_KEY, seedFlightState))
+  const [stayByTrip, setStayByTrip] = useState(() => load(STAY_KEY, seedStayState))
+  const [photoByTrip, setPhotoByTrip] = useState(() => load(PHOTO_KEY, seedPhotoState))
+  const [compByTrip, setCompByTrip] = useState(() => load(COMP_KEY, seedCompState))
+  const [add, setAdd] = useState({ open: false, tripId: null, editId: null })
+  const [tripSheet, setTripSheet] = useState({ open: false, editId: null })
+  const [itinSheet, setItinSheet] = useState({ open: false, tripId: null, day: 1, editId: null, prefill: null })
+  const [placeSheet, setPlaceSheet] = useState({ open: false, tripId: null, editId: null })
+  const [journalSheet, setJournalSheet] = useState({ open: false, tripId: null, editId: null })
+  const [flightSheet, setFlightSheet] = useState({ open: false, tripId: null, editId: null })
+  const [staySheet, setStaySheet] = useState({ open: false, tripId: null, editId: null })
+  const [photoSheet, setPhotoSheet] = useState({ open: false, tripId: null })
+  const [compSheet, setCompSheet] = useState({ open: false, tripId: null, editId: null })
+
+  useEffect(() => { persist(EXP_KEY, byTrip) }, [byTrip])
+  useEffect(() => { persist(TRIP_KEY, tripData) }, [tripData])
+  useEffect(() => { persist(PREP_KEY, prepByTrip) }, [prepByTrip])
+  useEffect(() => { persist(ITIN_KEY, itinByTrip) }, [itinByTrip])
+  useEffect(() => { persist(PLACE_KEY, placeByTrip) }, [placeByTrip])
+  useEffect(() => { persist(JOURNAL_KEY, journalByTrip) }, [journalByTrip])
+  useEffect(() => { persist(FLIGHT_KEY, flightByTrip) }, [flightByTrip])
+  useEffect(() => { persist(STAY_KEY, stayByTrip) }, [stayByTrip])
+  useEffect(() => { persist(PHOTO_KEY, photoByTrip) }, [photoByTrip])
+  useEffect(() => { persist(COMP_KEY, compByTrip) }, [compByTrip])
+
+  // 自建旅程排前面，套用覆寫、濾掉已刪除
+  const trips = useMemo(() => {
+    return [...tripData.custom, ...seedTrips]
+      .filter((t) => !tripData.deleted.includes(t.id))
+      .map((t) => (tripData.overrides[t.id] ? { ...t, ...tripData.overrides[t.id] } : t))
+  }, [tripData])
+  const getTrip = (id) => trips.find((t) => t.id === id)
+
+  const addExpense = (tripId, exp) => {
+    setByTrip((prev) => {
+      let list = prev[tripId]
+      if (!list) {
+        const t = getTrip(tripId)
+        list = t.spent ? [{ id: 'base', date: t.start, cat: 'other', title: '既有支出', amt: t.spent, loc: '前置紀錄' }] : []
+      }
+      return { ...prev, [tripId]: [...list, { id: uid('e'), ...exp }] }
+    })
+  }
+
+  const addTrip = (trip) => {
+    setTripData((prev) => ({ ...prev, custom: [trip, ...prev.custom] }))
+    return trip.id
+  }
+
+  const isCustom = (id) => tripData.custom.some((t) => t.id === id)
+
+  const toggleFav = (id) => {
+    const t = getTrip(id)
+    if (t) editTrip(id, { favorite: !t.favorite })
+  }
+
+  const editTrip = (id, patch) => {
+    setTripData((prev) => {
+      if (prev.custom.some((t) => t.id === id)) {
+        return { ...prev, custom: prev.custom.map((t) => (t.id === id ? { ...t, ...patch } : t)) }
+      }
+      return { ...prev, overrides: { ...prev.overrides, [id]: { ...prev.overrides[id], ...patch } } }
+    })
+  }
+
+  const deleteTrip = (id) => {
+    setTripData((prev) => {
+      if (prev.custom.some((t) => t.id === id)) {
+        return { ...prev, custom: prev.custom.filter((t) => t.id !== id) }
+      }
+      const overrides = { ...prev.overrides }; delete overrides[id]
+      return { ...prev, overrides, deleted: [...prev.deleted, id] }
+    })
+    setByTrip((prev) => { const n = { ...prev }; delete n[id]; return n })
+    setPrepByTrip((prev) => { const n = { ...prev }; delete n[id]; return n })
+    setItinByTrip((prev) => { const n = { ...prev }; delete n[id]; return n })
+    setPlaceByTrip((prev) => { const n = { ...prev }; delete n[id]; return n })
+    setJournalByTrip((prev) => { const n = { ...prev }; delete n[id]; return n })
+    setFlightByTrip((prev) => { const n = { ...prev }; delete n[id]; return n })
+    setStayByTrip((prev) => { const n = { ...prev }; delete n[id]; return n })
+    setPhotoByTrip((prev) => { const n = { ...prev }; delete n[id]; return n })
+    setCompByTrip((prev) => { const n = { ...prev }; delete n[id]; return n })
+    removeRecap(id)
+    removePlan(id)
+    removeBudgetAnalysis(id)
+  }
+
+  const editExpense = (tripId, id, patch) =>
+    setByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).map((e) => (e.id === id ? { ...e, ...patch } : e)) }))
+  const removeExpense = (tripId, id) =>
+    setByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((e) => e.id !== id) }))
+
+  const getExpenses = (tripId) => byTrip[tripId] || null
+  const getSpent = (trip) => {
+    const list = byTrip[trip.id]
+    return list ? list.reduce((s, e) => s + e.amt, 0) : trip.spent
+  }
+
+  // ---- 行前準備 ----
+  const getPrep = (tripId) => prepByTrip[tripId] || prepTemplate()
+  const ensurePrep = (prev, tripId) => (prev[tripId] ? prev : { ...prev, [tripId]: prepTemplate() })
+  const togglePrep = (tripId, kind, itemId) =>
+    setPrepByTrip((prev0) => {
+      const prev = ensurePrep(prev0, tripId)
+      const list = prev[tripId][kind].map((it) => (it.id === itemId ? { ...it, done: !it.done } : it))
+      return { ...prev, [tripId]: { ...prev[tripId], [kind]: list } }
+    })
+  const addPrep = (tripId, kind, item) =>
+    setPrepByTrip((prev0) => {
+      const prev = ensurePrep(prev0, tripId)
+      const it = { id: uid('p'), done: false, ...item }
+      return { ...prev, [tripId]: { ...prev[tripId], [kind]: [...prev[tripId][kind], it] } }
+    })
+  const removePrep = (tripId, kind, itemId) =>
+    setPrepByTrip((prev0) => {
+      const prev = ensurePrep(prev0, tripId)
+      const list = prev[tripId][kind].filter((it) => it.id !== itemId)
+      return { ...prev, [tripId]: { ...prev[tripId], [kind]: list } }
+    })
+  const reorderPrep = (tripId, kind, items) =>
+    setPrepByTrip((prev0) => {
+      const prev = ensurePrep(prev0, tripId)
+      return { ...prev, [tripId]: { ...prev[tripId], [kind]: items } }
+    })
+
+  // ---- 行程時間軸 ----
+  const getItinerary = (tripId) => itinByTrip[tripId] || {}
+  const addItin = (tripId, day, item) =>
+    setItinByTrip((prev) => {
+      const trip = prev[tripId] || {}
+      const list = trip[day] || []
+      return { ...prev, [tripId]: { ...trip, [day]: [...list, { id: uid('i'), ...item }] } }
+    })
+  const editItin = (tripId, day, itemId, patch) =>
+    setItinByTrip((prev) => {
+      const list = (prev[tripId]?.[day] || []).map((it) => (it.id === itemId ? { ...it, ...patch } : it))
+      return { ...prev, [tripId]: { ...prev[tripId], [day]: list } }
+    })
+  const removeItin = (tripId, day, itemId) =>
+    setItinByTrip((prev) => {
+      const list = (prev[tripId]?.[day] || []).filter((it) => it.id !== itemId)
+      return { ...prev, [tripId]: { ...prev[tripId], [day]: list } }
+    })
+  const copyItinDay = (tripId, fromDay, toDay) =>
+    setItinByTrip((prev) => {
+      const src = prev[tripId]?.[fromDay] || []
+      const dst = prev[tripId]?.[toDay] || []
+      const cloned = src.map((it) => ({ ...it, id: uid('i') }))
+      return { ...prev, [tripId]: { ...prev[tripId], [toDay]: [...dst, ...cloned] } }
+    })
+
+  // ---- 地點庫 ----
+  const getPlaces = (tripId) => placeByTrip[tripId] || []
+  const addPlace = (tripId, place) =>
+    setPlaceByTrip((prev) => ({ ...prev, [tripId]: [{ id: uid('pl'), ...place }, ...(prev[tripId] || [])] }))
+  const editPlace = (tripId, placeId, patch) =>
+    setPlaceByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).map((p) => (p.id === placeId ? { ...p, ...patch } : p)) }))
+  const removePlace = (tripId, placeId) =>
+    setPlaceByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((p) => p.id !== placeId) }))
+
+  // ---- 旅遊日誌 ----
+  const getJournal = (tripId) => journalByTrip[tripId] || []
+  const addJournal = (tripId, entry) =>
+    setJournalByTrip((prev) => ({ ...prev, [tripId]: [{ id: uid('j'), ...entry }, ...(prev[tripId] || [])] }))
+  const editJournal = (tripId, entryId, patch) =>
+    setJournalByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).map((e) => (e.id === entryId ? { ...e, ...patch } : e)) }))
+  const removeJournal = (tripId, entryId) =>
+    setJournalByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((e) => e.id !== entryId) }))
+
+  // ---- 機票 ----
+  const getFlights = (tripId) => flightByTrip[tripId] || []
+  const addFlight = (tripId, f) =>
+    setFlightByTrip((prev) => ({ ...prev, [tripId]: [...(prev[tripId] || []), { id: uid('f'), ...f }] }))
+  const editFlight = (tripId, fid, patch) =>
+    setFlightByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).map((f) => (f.id === fid ? { ...f, ...patch } : f)) }))
+  const removeFlight = (tripId, fid) =>
+    setFlightByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((f) => f.id !== fid) }))
+
+  // ---- 住宿 ----
+  const getStays = (tripId) => stayByTrip[tripId] || []
+  const addStay = (tripId, s) =>
+    setStayByTrip((prev) => ({ ...prev, [tripId]: [...(prev[tripId] || []), { id: uid('h'), ...s }] }))
+  const editStay = (tripId, sid, patch) =>
+    setStayByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).map((s) => (s.id === sid ? { ...s, ...patch } : s)) }))
+  const removeStay = (tripId, sid) =>
+    setStayByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((s) => s.id !== sid) }))
+
+  // ---- 相簿 ----
+  const getPhotos = (tripId) => photoByTrip[tripId] || []
+  const addPhoto = (tripId, p) =>
+    setPhotoByTrip((prev) => ({ ...prev, [tripId]: [...(prev[tripId] || []), { id: uid('ph'), ...p }] }))
+  const removePhoto = (tripId, pid) =>
+    setPhotoByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((p) => p.id !== pid) }))
+
+  // ---- 同行者 ----
+  const COLORS = ['#3E7C5A', '#2F6E8F', '#8C6BB1', '#C77B1E', '#B5557E', '#C2410C']
+  const getCompanions = (tripId) => compByTrip[tripId] || []
+  const addCompanion = (tripId, c) =>
+    setCompByTrip((prev) => {
+      const list = prev[tripId] || []
+      return { ...prev, [tripId]: [...list, { id: uid('c'), color: COLORS[list.length % COLORS.length], ...c }] }
+    })
+  const editCompanion = (tripId, cid, patch) =>
+    setCompByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).map((c) => (c.id === cid ? { ...c, ...patch } : c)) }))
+  const removeCompanion = (tripId, cid) => {
+    setCompByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((c) => c.id !== cid) }))
+    setByTrip((prev) => {
+      const list = prev[tripId]
+      if (!list) return prev
+      return {
+        ...prev,
+        [tripId]: list.map((e) => ({
+          ...e,
+          payer: e.payer === cid ? 'me' : e.payer,
+          split: e.split ? e.split.filter((s) => s !== cid) : e.split,
+        })),
+      }
+    })
+  }
+
+  const reset = () => {
+    try {
+      localStorage.removeItem(EXP_KEY); localStorage.removeItem(TRIP_KEY)
+      localStorage.removeItem(PREP_KEY); localStorage.removeItem(ITIN_KEY)
+      localStorage.removeItem(PLACE_KEY); localStorage.removeItem(JOURNAL_KEY)
+      localStorage.removeItem(FLIGHT_KEY); localStorage.removeItem(STAY_KEY)
+      localStorage.removeItem(PHOTO_KEY); localStorage.removeItem(COMP_KEY)
+    } catch {}
+    setByTrip(seedExpState())
+    setTripData(emptyTripData())
+    setPrepByTrip(seedPrepState())
+    setItinByTrip(seedItinState())
+    setPlaceByTrip(seedPlaceState())
+    setJournalByTrip(seedJournalState())
+    setFlightByTrip(seedFlightState())
+    setStayByTrip(seedStayState())
+    setPhotoByTrip(seedPhotoState())
+    setCompByTrip(seedCompState())
+  }
+
+  const openAdd = (tripId, editId = null) => setAdd({ open: true, tripId, editId })
+  const closeAdd = () => setAdd((a) => ({ ...a, open: false }))
+
+  const value = useMemo(
+    () => ({
+      trips, getTrip, addTrip, editTrip, deleteTrip, isCustom, toggleFav,
+      byTrip, addExpense, editExpense, removeExpense, getExpenses, getSpent, reset,
+      getPrep, togglePrep, addPrep, removePrep, reorderPrep,
+      getItinerary, addItin, editItin, removeItin, copyItinDay,
+      getPlaces, addPlace, editPlace, removePlace,
+      getJournal, addJournal, editJournal, removeJournal,
+      getFlights, addFlight, editFlight, removeFlight,
+      getStays, addStay, editStay, removeStay,
+      getPhotos, addPhoto, removePhoto,
+      getCompanions, addCompanion, editCompanion, removeCompanion,
+      add, openAdd, closeAdd,
+      tripSheet,
+      openTripSheet: (editId = null) => setTripSheet({ open: true, editId }),
+      closeTripSheet: () => setTripSheet((s) => ({ ...s, open: false })),
+      itinSheet,
+      openItin: (tripId, day, editId = null, prefill = null) => setItinSheet({ open: true, tripId, day, editId, prefill }),
+      closeItin: () => setItinSheet((s) => ({ ...s, open: false })),
+      placeSheet,
+      openPlace: (tripId, editId = null) => setPlaceSheet({ open: true, tripId, editId }),
+      closePlace: () => setPlaceSheet((s) => ({ ...s, open: false })),
+      journalSheet,
+      openJournal: (tripId, editId = null) => setJournalSheet({ open: true, tripId, editId }),
+      closeJournal: () => setJournalSheet((s) => ({ ...s, open: false })),
+      flightSheet,
+      openFlight: (tripId, editId = null) => setFlightSheet({ open: true, tripId, editId }),
+      closeFlight: () => setFlightSheet((s) => ({ ...s, open: false })),
+      staySheet,
+      openStay: (tripId, editId = null) => setStaySheet({ open: true, tripId, editId }),
+      closeStay: () => setStaySheet((s) => ({ ...s, open: false })),
+      photoSheet,
+      openPhoto: (tripId) => setPhotoSheet({ open: true, tripId }),
+      closePhoto: () => setPhotoSheet((s) => ({ ...s, open: false })),
+      compSheet,
+      openCompanion: (tripId, editId = null) => setCompSheet({ open: true, tripId, editId }),
+      closeCompanion: () => setCompSheet((s) => ({ ...s, open: false })),
+    }),
+    [byTrip, tripData, prepByTrip, itinByTrip, placeByTrip, journalByTrip, flightByTrip, stayByTrip, photoByTrip, compByTrip, add, tripSheet, itinSheet, placeSheet, journalSheet, flightSheet, staySheet, photoSheet, compSheet],
+  )
+  return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>
+}
+
+export const useStore = () => useContext(StoreCtx)
