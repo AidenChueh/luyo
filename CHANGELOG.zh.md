@@ -207,3 +207,8 @@
 - 範圍：src/styles/global.css、src/components/BottomNav.jsx
 - 做了什麼：修手機版三個版面問題。根因是 `.app` 用 `height: 100vh`——手機瀏覽器 100vh 是網址列收起後的最大視口，網址列在時 app 比可視區高、外層 body 可滑動且露出白底，底部 nav 也跟著被推出可視區。修法：`.app` 高度補 `100dvh`（保留 100vh 當舊瀏覽器 fallback，桌機媒體查詢同步補 `calc(100dvh - 56px)`）、`html/body` 加 `overflow: hidden` 與 `overscroll-behavior: none` 鎖外層捲動、`html` 補 canvas 背景色避免橡皮筋過捲露白。另把底部 nav icon 由 22 調大到 26、文字由 10.5px 調到 11px。build 驗證通過
 - 為什麼：使用者回報部署後手機上「上下有白色滑動空間、底部 nav 沒固定、icon 太小」
+
+## 2026-07-19 10:42（v1.01）
+- 範圍：src/screens/StubScreen.jsx、CLAUDE.md
+- 做了什麼：建立版號慣例——每次 push 前顯示版號 +0.01，記在專案 CLAUDE.md；「我的」頁「關於」區版號由「原型 v1」改為「原型 v1.01」。package.json semver 不動
+- 為什麼：使用者要求每次 push 都更新一次小版號

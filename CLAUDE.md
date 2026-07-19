@@ -17,6 +17,11 @@
 
 首頁儀表板、旅程總覽、行程規劃、地圖、記帳、預算、日誌、相簿、行前準備、機票、住宿、地點庫、同行者、旅程總結、AI 功能、進階功能（離線 / PWA / 雲端同步等）。
 
+## 版號慣例
+
+- 每次 push 前，把 `src/screens/StubScreen.jsx`「關於」區的版號 +0.01（v1.01 → v1.02 → …），並在 CHANGELOG 該筆紀錄註明版號
+- package.json 的 semver 版本不動，顯示版號以 StubScreen 為準
+
 ## 現況
 
 - React + Vite 高保真互動原型開發中，資料以 localStorage 持久化。
