@@ -247,3 +247,8 @@
 - 範圍：src/styles/global.css
 - 做了什麼：修 sheet 表單水平 overflow 的真正根因。肇事元件：各 sheet 的雙欄列 `.row`（flex）+ `.field`（flex:1）——flex item 預設 min-width:auto 不會縮得比內容固有寬度窄，text/date input 固有寬約 170–200px，兩欄加 gap 超過 sheet 內容寬（390px 手機約 350px），列撐破容器產生水平捲動空間，這才是編輯頁可左右滑的元兇（v1.06 字級 15→16 讓固有寬變大、症狀加劇）。修法：`.row > *` 加 `min-width: 0` 讓 flex 子項可收縮、`.field input` 補 `min-width: 0`，並在 `.sheet` 加 `overflow-x: hidden` 當第二道防線（非主要修法）。全 sheet 共用同一組 class，一次修全。build 驗證通過
 - 為什麼：使用者以資深前端角度提供排查清單，指出應修 layout 根因而非蓋 overflow-x:hidden
+
+## 2026-07-19 11:45（v1.09）
+- 範圍：src/styles/global.css、src/components/AddTripSheet.jsx、src/components/StaySheet.jsx
+- 做了什麼：v1.08 的 min-width:0 上線後日期欄位仍超寬，鎖定殘存元兇：WebKit（iOS Safari）的 `input[type="date"]` 原生外觀自帶固有最小寬度，width:100%/min-width:0 都壓不住，必須 `-webkit-appearance: none` 拔掉原生外觀才服從版面。全域對 `.field input[type="date"]` 加 appearance reset + display:block + max-width:100% + min-height:48px（拔外觀後空值時高度會塌，補回與 text input 同高）+ 靠左對齊（含 ::-webkit-date-and-time-value）。日期雙欄列（AddTripSheet 開始/結束日、StaySheet 入住/退房）加 `date-row` class 改用 grid `minmax(0,1fr) minmax(0,1fr)` 強制均分，≤360px 降為單欄。build 驗證通過
+- 為什麼：使用者回報日期欄位仍超出頁面寬度、結束日延伸到畫面外

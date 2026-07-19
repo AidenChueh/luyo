@@ -40,7 +40,7 @@ export default function StaySheet() {
           <div className="field" style={{ flex: 1 }}><label>電話</label><input type="text" value={v.phone || ''} onChange={set('phone')} placeholder="+81 ..." /></div>
           <div className="field" style={{ flex: 1 }}><label>訂房編號</label><input type="text" value={v.bookingNo || ''} onChange={set('bookingNo')} placeholder="BK-..." /></div>
         </div>
-        <div className="row" style={{ gap: 12 }}>
+        <div className="row date-row" style={{ gap: 12 }}>
           <div className="field" style={{ flex: 1 }}><label>入住</label><input type="date" value={v.checkin || ''} onChange={set('checkin')} /></div>
           <div className="field" style={{ flex: 1 }}><label>退房</label><input type="date" value={v.checkout || ''} onChange={set('checkout')} /></div>
         </div>

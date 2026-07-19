@@ -128,6 +128,10 @@ button:focus-visible, a:focus-visible {
 .row { display: flex; align-items: center; }
 /* flex item 預設 min-width:auto 不會縮到比內容固有寬度窄，雙欄 input 會撐破容器 */
 .row > * { min-width: 0; }
+.date-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+@media (max-width: 360px) {
+  .date-row { grid-template-columns: minmax(0, 1fr); }
+}
 .between { display: flex; align-items: center; justify-content: space-between; }
 
 /* ---------- Search ---------- */
@@ -619,6 +623,12 @@ button:focus-visible, a:focus-visible {
   font-size: 16px; color: var(--ink); outline: none;
 }
 .field input:focus { border-color: var(--primary); }
+/* WebKit date input 的原生外觀帶固有最小寬度，width/min-width 壓不住，得拔掉 appearance */
+.field input[type="date"] {
+  display: block; -webkit-appearance: none; appearance: none;
+  max-width: 100%; min-height: 48px; text-align: left;
+}
+.field input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 
 .profile-card { display: flex; align-items: center; gap: 14px; padding: 16px; }
 .profile-avatar { width: 56px; height: 56px; border-radius: 50%; color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 22px; flex: none; }

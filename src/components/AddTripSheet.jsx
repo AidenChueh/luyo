@@ -125,7 +125,7 @@ export default function AddTripSheet() {
           </div>
         </div>
 
-        <div className="row" style={{ gap: 12 }}>
+        <div className="row date-row" style={{ gap: 12 }}>
           <div className="field" style={{ flex: 1 }}>
             <label>開始日</label>
             <input type="date" value={start} onChange={(e) => { setStart(e.target.value); if (new Date(e.target.value) > new Date(end)) setEnd(e.target.value) }} />
