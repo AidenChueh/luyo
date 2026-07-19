@@ -202,3 +202,8 @@
 - 範圍：package.json、package-lock.json、index.html、public/manifest.webmanifest、public/sw.js、CLAUDE.md、README.md、design-outline.html、src/store.jsx、src/lib/ai.js、src/lib/settings.js、src/lib/theme.js、src/screens/StubScreen.jsx、src/screens/SummaryScreen.jsx
 - 做了什麼：專案名稱由 yotrip 改為 luyo。更新所有標題/顯示文字、package name、manifest、service worker cache 名稱（yotrip-cache-v1 → luyo-cache-v1），並將 localStorage key 前綴由 `yotrip:` 改為 `luyo:`（經確認後一併更動，代表瀏覽器內既有 yotrip: 開頭的資料不會被新版讀到）。CHANGELOG.zh.md 過去條目與 docs/superpowers 底下的歷史規劃/設計文件維持原樣不動
 - 為什麼：使用者要求專案改名為 luyo
+
+## 2026-07-19 10:36
+- 範圍：src/styles/global.css、src/components/BottomNav.jsx
+- 做了什麼：修手機版三個版面問題。根因是 `.app` 用 `height: 100vh`——手機瀏覽器 100vh 是網址列收起後的最大視口，網址列在時 app 比可視區高、外層 body 可滑動且露出白底，底部 nav 也跟著被推出可視區。修法：`.app` 高度補 `100dvh`（保留 100vh 當舊瀏覽器 fallback，桌機媒體查詢同步補 `calc(100dvh - 56px)`）、`html/body` 加 `overflow: hidden` 與 `overscroll-behavior: none` 鎖外層捲動、`html` 補 canvas 背景色避免橡皮筋過捲露白。另把底部 nav icon 由 22 調大到 26、文字由 10.5px 調到 11px。build 驗證通過
+- 為什麼：使用者回報部署後手機上「上下有白色滑動空間、底部 nav 沒固定、icon 太小」

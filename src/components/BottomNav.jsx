@@ -34,7 +34,7 @@ export default function BottomNav() {
           className={`navitem ${isActive(t) ? 'active' : ''}`}
           onClick={() => nav(targetOf(t))}
         >
-          <Icon className="glyph" name={t.icon} size={22} fill={isActive(t) && t.icon === 'home'} />
+          <Icon className="glyph" name={t.icon} size={26} fill={isActive(t) && t.icon === 'home'} />
           <span>{t.label}</span>
         </button>
       ))}
