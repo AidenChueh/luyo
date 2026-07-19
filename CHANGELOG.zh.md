@@ -237,3 +237,8 @@
 - 範圍：src/styles/global.css
 - 做了什麼：修「編輯旅程 sheet 聚焦輸入框後整頁可四向平移」。根因：iOS Safari 對字級 <16px 的輸入控件會在聚焦時自動放大整頁，放大後版面超出可視區即可上下左右平移（佐證：已是 16px 的 .profile-name-input 不會觸發）。把所有 <16px 的文字輸入控件提到 16px：.field input（15）、.search input（15）、.addbar input（14.5）、.editor-area textarea（14.5）。build 驗證通過
 - 為什麼：使用者回報編輯旅程頁面聚焦名稱輸入框後視窗可上下左右滑動
+
+## 2026-07-19 11:25（v1.07）
+- 範圍：index.html
+- 做了什麼：v1.06 提字級後仍會四向平移，改由 viewport meta 根治：加 `maximum-scale=1, user-scalable=no`（關閉聚焦自動縮放與雙擊縮放；iOS 捏合縮放因系統無障礙例外仍可用）與 `interactive-widget=resizes-content`（Android Chrome 鍵盤彈出改壓縮版面高度，不平移可視區）。build 驗證通過
+- 為什麼：使用者回報所有編輯頁面仍可四向平移，要求畫面固定
