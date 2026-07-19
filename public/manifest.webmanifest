@@ -8,7 +8,7 @@
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#FBF8F4",
-  "theme_color": "#E8743B",
+  "theme_color": "#FBF8F4",
   "categories": ["travel", "lifestyle", "productivity"],
   "icons": [
     { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },

@@ -227,3 +227,8 @@
 - 範圍：src/styles/global.css
 - 做了什麼：修手機版 nav 內容上下留白不均。根因：全域 box-sizing: border-box 下，`.bottomnav` 的 `height: var(--nav-h)` 是含 padding 的總高，手機上 `padding-bottom: env(safe-area-inset-bottom)`（約 20–34px）從 80px 內扣，內容被擠到上半部、下方留一整段空 padding；桌面 inset 為 0 所以正常。修法：高度改 `calc(var(--nav-h) + env(safe-area-inset-bottom, 0px))` 讓 safe-area 外加。build 驗證通過
 - 為什麼：使用者回報網頁版 nav 正常、手機版上下留白不均（下多上少），要求查明原因
+
+## 2026-07-19 11:03（v1.05）
+- 範圍：src/styles/tokens.css、src/lib/theme.js、index.html、public/manifest.webmanifest
+- 做了什麼：nav 高度 `--nav-h` 80 → 64px 改回原值（留白不均已由 v1.04 修好，不需靠加高補償）。修手機最上方色塊：狀態列/網址列是瀏覽器依 `<meta name="theme-color">` 上色，淺色模式原設品牌橘 #E8743B 與米白背景形成色差，index.html、theme.js（淺色分支）、manifest theme_color 一律改 #FBF8F4 與背景同色；深色模式維持 #1A1714。build 驗證通過
+- 為什麼：使用者確認 nav 留白正常後要求高度改回，並回報手機最上方有一塊背景顏色不一樣
