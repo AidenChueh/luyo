@@ -217,3 +217,8 @@
 - 範圍：src/styles/global.css、src/components/BottomNav.jsx、src/screens/StubScreen.jsx
 - 做了什麼：第二輪修頁面過捲。先驗證 Vercel 上已是含 100dvh 修正的版本（asset hash 對應最新 commit），確認非舊快取而是修法不足。補兩處：body 加 `position: fixed; inset: 0`（iOS Safari 不理 body 的 overflow:hidden，只有 fixed 能鎖住文件捲動）；`.scroll` 加 `overscroll-behavior-y: none` 擋內層捲動容器的橡皮筋回彈。底部 nav icon 26 → 30。build 驗證通過
 - 為什麼：使用者回報 v1.01 部署後上方仍可滑出空白、nav icon 仍太小
+
+## 2026-07-19 10:55（v1.03）
+- 範圍：src/styles/tokens.css、src/styles/global.css、src/components/BottomNav.jsx
+- 做了什麼：底部 nav 整體加大——高度 `--nav-h` 64 → 80px（.scroll 底部留白引用同一變數自動跟上），icon 30 → 34，文字 11 → 12px，icon 與文字間距 3 → 4px。build 驗證通過
+- 為什麼：使用者回報 nav icon 仍太小、icon 上方留白不足，判斷是 nav 高度不夠
