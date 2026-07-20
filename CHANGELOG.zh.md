@@ -272,3 +272,8 @@
   9. 修匯率換算與通知 sheet 底部被遮擋：根因是這兩個 overlay 寫在 `.scroll` 內，而 `.scroll` 是帶 `-webkit-overflow-scrolling: touch` 的捲動容器，iOS 會把其中的 absolute 子元素裁切到捲動區內；改以 fragment 讓 overlay 與 `.scroll` 同層（直接掛在 `.app` 下），同批修正 TripOverview 的更多選單 sheet。另修全域 `env(safe-area-inset-*, 0)` 的無單位 fallback 為 `0px`（`calc()` 中無單位 0 會讓整條宣告失效，等同底部留白歸零），sheet 底部留白提高到 `24px + safe-area` 並加 `overscroll-behavior: contain`。
   build 驗證通過
 - 為什麼：使用者提出七項功能調整，並要求以根因修復 sheet 底部內容被底部元件遮住的問題
+
+## 2026-07-20 12:08（v1.12）
+- 範圍：src/styles/global.css
+- 做了什麼：全站關閉行動裝置的文字選取與藍色高亮。`html` 設 `-webkit-tap-highlight-color: transparent`（可繼承，全站生效）、`-webkit-touch-callout: none`（擋長按彈出選單）、`user-select: none`（擋長按反白與選取控制點）；`img` 加 `-webkit-user-drag: none` 擋拖曳殘影。再對 `input, textarea, select, [contenteditable="true"], .md, .selectable` 把 `user-select: text` 與 callout 開回來，確保輸入與日誌內文仍可選取複製。未動 pointer-events / touch-action，點擊與捲動行為不受影響。build 驗證通過
+- 為什麼：使用者回報全站長按/點擊會出現 iOS 藍色選取區塊與控制點
