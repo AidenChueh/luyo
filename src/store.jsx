@@ -238,6 +238,8 @@ export function StoreProvider({ children }) {
     setFlightByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).map((f) => (f.id === fid ? { ...f, ...patch } : f)) }))
   const removeFlight = (tripId, fid) =>
     setFlightByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((f) => f.id !== fid) }))
+  const reorderFlights = (tripId, items) =>
+    setFlightByTrip((prev) => ({ ...prev, [tripId]: items }))
 
   // ---- 住宿 ----
   const getStays = (tripId) => stayByTrip[tripId] || []
@@ -312,7 +314,7 @@ export function StoreProvider({ children }) {
       getItinerary, addItin, editItin, removeItin, copyItinDay,
       getPlaces, addPlace, editPlace, removePlace,
       getJournal, addJournal, editJournal, removeJournal,
-      getFlights, addFlight, editFlight, removeFlight,
+      getFlights, addFlight, editFlight, removeFlight, reorderFlights,
       getStays, addStay, editStay, removeStay,
       getPhotos, addPhoto, removePhoto,
       getCompanions, addCompanion, editCompanion, removeCompanion,

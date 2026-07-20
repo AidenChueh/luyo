@@ -257,3 +257,18 @@
 - 範圍：src/components/BottomNav.jsx
 - 做了什麼：修底部 nav active 狀態不切換。根因：從旅程內頁點「地圖/記帳」導向 `/trip/:id/map`、`/trip/:id/expenses`，但 isActive 裡「旅程」的條件 `startsWith('/trip/')` 把這些子頁也算進去、持續高亮，而「地圖/記帳」的 `startsWith('/map')` 配不到。改為：地圖/記帳各自比對頂層路徑或 `/trip/:id/map|expenses`，旅程排除這兩種子頁。build 驗證通過
 - 為什麼：使用者回報在旅程分頁點地圖或記帳後畫面會換但 nav 高亮不動
+
+## 2026-07-20 12:01（v1.11）
+- 範圍：src/lib/dragsort.js（新增）、src/lib/settings.js、src/store.jsx、src/screens/LogisticsScreen.jsx、TripOverviewScreen.jsx、ExpensesScreen.jsx、HomeScreen.jsx、JournalScreen.jsx、ItineraryScreen.jsx、src/components/JournalSheet.jsx、src/styles/global.css
+- 做了什麼：一批功能調整 + 修 sheet 底部遮擋。
+  1. 機票飛行時間：FlightCard 中央飛機 icon 旁顯示 `Xh XXm`，由起降時刻差計算（跨午夜視為隔日；無時區資料故為時刻差而非實際航程）。
+  2. 拖曳排序共用實作：新增 `lib/dragsort.js` 的 useDragSort，採 pointer 事件而非 HTML5 draggable（後者在 iOS/Android 觸控完全不觸發），以 elementFromPoint 命中 `data-dragid` 即時換位，並用 400ms 時間窗擋掉拖曳後補發的 click 避免誤開編輯。
+  3. 機票可拖曳排序：store 加 reorderFlights；LogisticsScreen 移除原本依去程/回程的強制排序以尊重手動順序，卡片右上加拖曳把手。
+  4. 快速入口可拖曳排序：順序存 `luyo:quickorder:v1`（存 key 陣列而非索引，日後增刪入口仍相容），每格右上加拖曳把手。
+  5. AI 行程規劃：ItineraryScreen 的 AIPlanCard 使用處註解掉，元件實作保留待日後開啟。
+  6. 旅遊日誌照片：JournalSheet 加單張照片上傳（沿用 lib/image 壓縮成 dataURL），JournalScreen 卡片右方顯示 76px 縮圖。
+  7. 預算進度區塊由旅程總覽移至記帳頁最上方（統計格上方）。
+  8. 刪除旅程總覽的四格統計（已完成行程／收藏地點／旅程照片／倒數）。
+  9. 修匯率換算與通知 sheet 底部被遮擋：根因是這兩個 overlay 寫在 `.scroll` 內，而 `.scroll` 是帶 `-webkit-overflow-scrolling: touch` 的捲動容器，iOS 會把其中的 absolute 子元素裁切到捲動區內；改以 fragment 讓 overlay 與 `.scroll` 同層（直接掛在 `.app` 下），同批修正 TripOverview 的更多選單 sheet。另修全域 `env(safe-area-inset-*, 0)` 的無單位 fallback 為 `0px`（`calc()` 中無單位 0 會讓整條宣告失效，等同底部留白歸零），sheet 底部留白提高到 `24px + safe-area` 並加 `overscroll-behavior: contain`。
+  build 驗證通過
+- 為什麼：使用者提出七項功能調整，並要求以根因修復 sheet 底部內容被底部元件遮住的問題

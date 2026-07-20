@@ -188,9 +188,11 @@ export default function ItineraryScreen() {
         </div>
       </div>
 
+      {/* AI 行程規劃暫時隱藏（保留 AIPlanCard 實作，之後要開啟時取消註解即可）
       <div className="pad section">
         <AIPlanCard trip={trip} />
       </div>
+      */}
 
       <div className="pad section" style={{ marginTop: 16 }}>
         <div className="between" style={{ marginBottom: 14 }}>

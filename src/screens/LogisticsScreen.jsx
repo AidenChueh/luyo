@@ -3,18 +3,35 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import Icon from '../components/Icon'
 import { useStore } from '../store'
 import { money } from '../lib/format'
+import { useDragSort } from '../lib/dragsort'
 
 const nights = (a, b) => Math.max(1, Math.round((new Date(b) - new Date(a)) / 86400000))
 
-function FlightCard({ f, sym, onClick }) {
+// 無時區資料，僅能以起降時刻差計算；跨午夜視為隔日抵達
+const duration = (dep, arr) => {
+  const m = (t) => {
+    const [h, mi] = (t || '').split(':').map(Number)
+    return Number.isFinite(h) && Number.isFinite(mi) ? h * 60 + mi : null
+  }
+  const a = m(dep), b = m(arr)
+  if (a == null || b == null) return ''
+  const d = (b - a + 1440) % 1440
+  return `${Math.floor(d / 60)}h ${String(d % 60).padStart(2, '0')}m`
+}
+
+function FlightCard({ f, onClick, item, handle }) {
+  const dur = duration(f.dep, f.arr)
   return (
-    <div className="flight-card" onClick={onClick} style={{ cursor: 'pointer' }}>
+    <div className="flight-card" onClick={onClick} {...item} style={{ cursor: 'pointer', ...item.style }}>
       <div className="fc-top">
         <span className="row" style={{ gap: 8, fontWeight: 700, fontSize: 14 }}>
           <Icon name="plane" size={17} style={{ color: 'var(--cat-hotel)' }} /> {f.airline} {f.no}
         </span>
-        <span className="tag" style={{ background: f.dir === 'outbound' ? 'var(--primary-soft)' : 'var(--accent-soft)', color: f.dir === 'outbound' ? 'var(--primary)' : 'var(--accent)' }}>
-          {f.dir === 'outbound' ? '去程' : '回程'}
+        <span className="row" style={{ gap: 8 }}>
+          <span className="tag" style={{ background: f.dir === 'outbound' ? 'var(--primary-soft)' : 'var(--accent-soft)', color: f.dir === 'outbound' ? 'var(--primary)' : 'var(--accent)' }}>
+            {f.dir === 'outbound' ? '去程' : '回程'}
+          </span>
+          <span {...handle} title="拖曳排序" aria-label="拖曳排序" style={{ color: 'var(--line-strong)', padding: '2px 0', ...handle.style }}><Icon name="dots" size={16} /></span>
         </span>
       </div>
       <div className="flight-route">
@@ -24,7 +41,10 @@ function FlightCard({ f, sym, onClick }) {
           <div className="ap">{(f.depAp || '').split(' ').slice(1).join(' ')}</div>
         </div>
         <div className="mid">
-          <Icon name="plane" size={16} />
+          <span className="row" style={{ gap: 5, justifyContent: 'center' }}>
+            <Icon name="plane" size={16} />
+            {dur && <span style={{ fontSize: 11.5, fontWeight: 700, whiteSpace: 'nowrap' }}>{dur}</span>}
+          </span>
           <div className="ln" style={{ margin: '6px 0' }} />
           <div style={{ fontSize: 10.5, fontWeight: 600 }}>{f.date?.slice(5)}</div>
         </div>
@@ -47,12 +67,13 @@ export default function LogisticsScreen() {
   const { id } = useParams()
   const nav = useNavigate()
   const [sp] = useSearchParams()
-  const { getTrip, getFlights, getStays, openFlight, openStay } = useStore()
+  const { getTrip, getFlights, getStays, openFlight, openStay, reorderFlights } = useStore()
   const trip = getTrip(id)
   const [tab, setTab] = useState(sp.get('tab') === 'stay' ? 'stay' : 'flight')
+  const fl = getFlights(id)
+  const drag = useDragSort(fl.map((f) => f.id), (order) => reorderFlights(id, order.map((fid) => fl.find((f) => f.id === fid))))
   if (!trip) return null
 
-  const fl = [...getFlights(id)].sort((a, b) => (a.dir === 'outbound' ? -1 : 1))
   const st = getStays(id)
 
   return (
@@ -77,7 +98,15 @@ export default function LogisticsScreen() {
       <div className="pad section" style={{ marginTop: 16 }}>
         {tab === 'flight' && (
           <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            {fl.map((f) => <FlightCard key={f.id} f={f} sym={trip.sym} onClick={() => openFlight(id, f.id)} />)}
+            {fl.map((f) => (
+              <FlightCard
+                key={f.id}
+                f={f}
+                item={drag.item(f.id)}
+                handle={drag.handle(f.id)}
+                onClick={() => { if (!drag.justDragged()) openFlight(id, f.id) }}
+              />
+            ))}
             {fl.length === 0 && <div className="card" style={{ padding: 28, textAlign: 'center', color: 'var(--muted)' }}>還沒有航班，右上＋ 新增</div>}
           </div>
         )}

@@ -97,6 +97,7 @@ export default function HomeScreen() {
   const rest = list.filter((t) => t.id !== ongoing?.id || filter !== 'all')
 
   return (
+    <>
     <div className="scroll">
       <header className="topbar">
         <div>
@@ -208,6 +209,7 @@ export default function HomeScreen() {
       </div>
 
       <button className="fab" onClick={() => openTripSheet()} aria-label="新增旅程"><Icon name="plus" size={26} /></button>
+    </div>
 
       {notifOpen && (
         <div className="sheet-overlay" onClick={() => setNotifOpen(false)}>
@@ -242,6 +244,6 @@ export default function HomeScreen() {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }

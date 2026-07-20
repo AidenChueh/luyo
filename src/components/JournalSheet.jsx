@@ -3,6 +3,7 @@ import Icon from './Icon'
 import { useStore } from '../store'
 import { MOODS } from '../data/seed'
 import { renderMarkdown } from '../lib/markdown'
+import { pickImage } from '../lib/image'
 
 const TODAY = '2026-06-14'
 
@@ -14,13 +15,14 @@ export default function JournalSheet() {
   const [title, setTitle] = useState('')
   const [mood, setMood] = useState(4)
   const [content, setContent] = useState('')
+  const [photo, setPhoto] = useState('')
   const [preview, setPreview] = useState(false)
 
   useEffect(() => {
     if (!open) return
     const e = editId ? getJournal(tripId).find((x) => x.id === editId) : null
-    if (e) { setDate(e.date); setTitle(e.title); setMood(e.mood); setContent(e.content || '') }
-    else { setDate(TODAY); setTitle(''); setMood(4); setContent('') }
+    if (e) { setDate(e.date); setTitle(e.title); setMood(e.mood); setContent(e.content || ''); setPhoto(e.photo || '') }
+    else { setDate(TODAY); setTitle(''); setMood(4); setContent(''); setPhoto('') }
     setPreview(false)
   }, [open, editId, tripId])
 
@@ -29,7 +31,7 @@ export default function JournalSheet() {
   const valid = title.trim()
   const submit = () => {
     if (!valid) return
-    const fields = { date, title: title.trim(), mood, content }
+    const fields = { date, title: title.trim(), mood, content, photo }
     if (editId) editJournal(tripId, editId, fields)
     else addJournal(tripId, fields)
     closeJournal()
@@ -75,6 +77,20 @@ export default function JournalSheet() {
           ) : (
             <textarea className="editor-area" value={content} onChange={(e) => setContent(e.target.value)} placeholder={'# 標題\n\n今天**最棒**的是…\n\n- 重點一\n- 重點二'} />
           )}
+        </div>
+
+        <div className="field">
+          <label>照片（可選，一張）</label>
+          <div className="row" style={{ gap: 10 }}>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(setPhoto)}>
+              <Icon name="image" size={17} /> {photo ? '重新上傳' : '從裝置上傳'}
+            </button>
+            {photo && (
+              <div style={{ width: 46, height: 46, borderRadius: 12, backgroundImage: `url(${photo})`, backgroundSize: 'cover', backgroundPosition: 'center', flex: 'none', position: 'relative' }}>
+                <button onClick={() => setPhoto('')} aria-label="移除照片" className="img-remove" style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: 'var(--ink)', color: '#fff', fontSize: 13 }}>×</button>
+              </div>
+            )}
+          </div>
         </div>
 
         <button className="btn btn-primary btn-block" style={{ marginTop: 8, opacity: valid ? 1 : 0.5 }} onClick={submit} disabled={!valid}>

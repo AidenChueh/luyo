@@ -52,6 +52,7 @@ export default function JournalScreen() {
                     <div style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 600, margin: '2px 0 6px' }}>{e.title}</div>
                     <div className="md clamp" dangerouslySetInnerHTML={{ __html: renderMarkdown(e.content) }} />
                   </div>
+                  {e.photo && <img className="journal-photo" src={e.photo} alt="" loading="lazy" />}
                 </article>
               )
             })}

@@ -67,7 +67,7 @@ button:focus-visible, a:focus-visible {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: none;
-  padding-bottom: calc(var(--nav-h) + 28px + env(safe-area-inset-bottom, 0));
+  padding-bottom: calc(var(--nav-h) + 28px + env(safe-area-inset-bottom, 0px));
 }
 .scroll::-webkit-scrollbar { width: 0; }
 
@@ -82,7 +82,7 @@ button:focus-visible, a:focus-visible {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: calc(14px + env(safe-area-inset-top, 0)) 18px 12px;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 18px 12px;
   background: linear-gradient(var(--bg) 70%, rgba(251, 248, 244, 0));
 }
 .topbar.solid { background: var(--bg); border-bottom: 1px solid var(--line); }
@@ -189,7 +189,7 @@ button:focus-visible, a:focus-visible {
 .fab {
   position: absolute;
   right: 18px;
-  bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom, 0));
+  bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom, 0px));
   z-index: 30;
   width: 56px; height: 56px;
   border-radius: 20px;
@@ -274,10 +274,17 @@ button:focus-visible, a:focus-visible {
 /* ---------- Quick entries ---------- */
 .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .quick {
+  position: relative;
   background: var(--surface); border: 1px solid var(--line);
   border-radius: var(--r-lg); padding: 14px 10px; box-shadow: var(--sh-1);
   display: flex; flex-direction: column; align-items: center; gap: 8px;
   transition: transform .15s ease;
+}
+.quick-grip {
+  position: absolute; top: 4px; right: 4px;
+  display: grid; place-items: center;
+  width: 26px; height: 26px; border-radius: 8px;
+  color: var(--line-strong);
 }
 .quick:active { transform: scale(.95); }
 .quick .ic { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; }
@@ -392,7 +399,7 @@ button:focus-visible, a:focus-visible {
   backdrop-filter: blur(18px) saturate(1.4);
   border-top: 1px solid var(--line);
   box-shadow: var(--sh-nav);
-  padding-bottom: env(safe-area-inset-bottom, 0);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 .navitem {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
@@ -544,6 +551,10 @@ button:focus-visible, a:focus-visible {
 
 .journal-card { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid var(--line); }
 .journal-card .mood { font-size: 30px; flex: none; line-height: 1; }
+.journal-photo {
+  width: 76px; height: 76px; flex: none; align-self: flex-start;
+  object-fit: cover; border-radius: var(--r-md); box-shadow: var(--sh-1);
+}
 .journal-date { font-size: 12px; font-weight: 700; color: var(--primary); letter-spacing: .03em; }
 
 .editor-area {
@@ -601,8 +612,9 @@ button:focus-visible, a:focus-visible {
   background: var(--bg);
   border-radius: 26px 26px 0 0;
   box-shadow: 0 -10px 40px rgba(28,25,23,.22);
-  padding: 10px 20px calc(20px + env(safe-area-inset-bottom, 0));
+  padding: 10px 20px calc(24px + env(safe-area-inset-bottom, 0px));
   max-height: 92%; overflow-y: auto; overflow-x: hidden;
+  overscroll-behavior: contain;
   animation: sheetIn .32s cubic-bezier(.22,.61,.36,1) both;
 }
 @keyframes sheetIn { from { transform: translateY(100%); } to { transform: none; } }

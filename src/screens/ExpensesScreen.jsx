@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Icon from '../components/Icon'
 import { CATEGORIES } from '../data/seed'
 import { useStore } from '../store'
-import { money, parseYMD } from '../lib/format'
+import { money, parseYMD, pct } from '../lib/format'
 import { HOME, CURRENCY_LIST, convert, toHome, symbolOf } from '../lib/rates'
 
 function Converter({ defaultFrom, onClose }) {
@@ -112,7 +112,11 @@ export default function ExpensesScreen() {
   const trend = byDay.map(([d, v]) => { acc += v; return { d, v: acc } })
   const trendMax = acc || 1
 
+  const budgetPct = pct(total, trip.budget)
+  const budgetColor = budgetPct >= 85 ? 'var(--danger)' : budgetPct >= 50 ? 'var(--amber)' : 'var(--accent)'
+
   return (
+    <>
     <div className="scroll">
       <header className="topbar solid">
         {id ? <button className="iconbtn ghost" onClick={() => nav(`/trip/${trip.id}`)} aria-label="返回"><Icon name="chevronLeft" size={22} /></button> : null}
@@ -124,8 +128,30 @@ export default function ExpensesScreen() {
         <button className="iconbtn" onClick={() => setConv(true)} title="匯率換算" aria-label="匯率換算"><Icon name="route" size={20} /></button>
       </header>
 
-      {/* Stat grid */}
+      {/* Budget */}
       <div className="pad section" style={{ marginTop: 6 }}>
+        <div className="card" style={{ padding: 16 }}>
+          <div className="between">
+            <div className="section-title" style={{ fontSize: 16 }}>預算進度</div>
+            <button className="row" style={{ gap: 4, color: 'var(--primary)', fontSize: 13, fontWeight: 700 }} onClick={() => nav(`/trip/${trip.id}/budget`)}>
+              詳情 <Icon name="chevronRight" size={15} />
+            </button>
+          </div>
+          <div className="row" style={{ alignItems: 'baseline', gap: 8, margin: '12px 0 10px' }}>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 600 }}>{money(total, trip.sym)}</span>
+            <span className="muted" style={{ fontWeight: 600 }}>/ {money(trip.budget, trip.sym)}</span>
+            <span style={{ marginLeft: 'auto', fontWeight: 700, color: budgetColor }}>{budgetPct}%</span>
+          </div>
+          <div className="track"><i style={{ width: `${Math.min(100, budgetPct)}%`, background: budgetColor }} /></div>
+          <div className="between" style={{ marginTop: 8, fontSize: 12.5, fontWeight: 600 }}>
+            <span className="muted">每日平均 {money(dailyAvg, trip.sym)}</span>
+            <span style={{ color: 'var(--accent)' }}>剩餘 {money(remaining, trip.sym)}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Stat grid */}
+      <div className="pad section">
         <div className="stat-grid">
           <div className="stat"><div className="k"><Icon name="wallet" size={14} /> 總支出</div><div className="v">{money(total, trip.sym)}</div><div className="s">{trip.currency !== HOME ? `≈ NT$${Math.round(toHome(total, trip.currency)).toLocaleString()}` : `${list.length} 筆紀錄`}</div></div>
           <div className="stat"><div className="k"><Icon name="calendar" size={14} /> 每日平均</div><div className="v">{money(dailyAvg, trip.sym)}</div><div className="s">第 {trip.currentDay || trip.days} 天</div></div>
@@ -217,7 +243,9 @@ export default function ExpensesScreen() {
       </div>
 
       <button className="fab" onClick={() => openAdd(trip.id)} aria-label="新增支出"><Icon name="plus" size={26} /></button>
-      {conv && <Converter defaultFrom={trip.currency} onClose={() => setConv(false)} />}
     </div>
+
+      {conv && <Converter defaultFrom={trip.currency} onClose={() => setConv(false)} />}
+    </>
   )
 }

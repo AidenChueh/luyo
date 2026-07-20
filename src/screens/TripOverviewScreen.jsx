@@ -3,7 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Icon from '../components/Icon'
 import Cover from '../components/Cover'
 import { useStore } from '../store'
-import { money, dateRange, pct } from '../lib/format'
+import { dateRange } from '../lib/format'
+import { getQuickOrder, setQuickOrder } from '../lib/settings'
+import { useDragSort } from '../lib/dragsort'
 
 const QUICK = [
   { key: 'itinerary', label: '行程', icon: 'calendar', color: 'var(--cat-sight)', bg: 'var(--primary-soft)' },
@@ -17,11 +19,23 @@ const QUICK = [
   { key: 'gallery', label: '相簿', icon: 'image', color: 'var(--cat-souvenir, #B5557E)', bg: '#F8E6EE' },
 ]
 
+const orderedQuick = (order) => {
+  if (!order) return QUICK
+  const byKey = new Map(QUICK.map((q) => [q.key, q]))
+  const kept = order.map((k) => byKey.get(k)).filter(Boolean)
+  return [...kept, ...QUICK.filter((q) => !order.includes(q.key))]
+}
+
 export default function TripOverviewScreen() {
   const { id } = useParams()
   const nav = useNavigate()
-  const { getTrip, getSpent, openTripSheet, deleteTrip, editTrip } = useStore()
+  const { getTrip, openTripSheet, deleteTrip, editTrip } = useStore()
   const [menu, setMenu] = useState(false)
+  const [quick, setQuick] = useState(() => orderedQuick(getQuickOrder()))
+  const drag = useDragSort(quick.map((q) => q.key), (order) => {
+    setQuick(orderedQuick(order))
+    setQuickOrder(order)
+  })
   const trip = getTrip(id)
   if (!trip) return null
 
@@ -43,12 +57,8 @@ export default function TripOverviewScreen() {
     }
   }
 
-  const spent = getSpent(trip)
-  const p = pct(spent, trip.budget)
-  const remaining = trip.budget - spent
-  const dayAvg = Math.round(spent / Math.max(1, trip.currentDay || trip.days))
-
   const go = (k) => {
+    if (drag.justDragged()) return
     if (k === 'itinerary') nav(`/trip/${id}/itinerary`)
     else if (k === 'expenses') nav(`/trip/${id}/expenses`)
     else if (k === 'journal') nav(`/trip/${id}/journal`)
@@ -62,6 +72,7 @@ export default function TripOverviewScreen() {
   }
 
   return (
+    <>
     <div className="scroll">
       <section className="hero">
         <Cover src={trip.cover} gradient={trip.gradient} />
@@ -96,48 +107,24 @@ export default function TripOverviewScreen() {
         </div>
       </div>
 
-      {/* Budget */}
-      <div className="pad section">
-        <div className="card" style={{ padding: 16 }}>
-          <div className="between">
-            <div className="section-title" style={{ fontSize: 16 }}>預算進度</div>
-            <button className="row" style={{ gap: 4, color: 'var(--primary)', fontSize: 13, fontWeight: 700 }} onClick={() => nav(`/trip/${id}/budget`)}>
-              詳情 <Icon name="chevronRight" size={15} />
-            </button>
-          </div>
-          <div className="row" style={{ alignItems: 'baseline', gap: 8, margin: '12px 0 10px' }}>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 600 }}>{money(spent, trip.sym)}</span>
-            <span className="muted" style={{ fontWeight: 600 }}>/ {money(trip.budget, trip.sym)}</span>
-            <span style={{ marginLeft: 'auto', fontWeight: 700, color: p >= 85 ? 'var(--danger)' : p >= 50 ? 'var(--amber)' : 'var(--accent)' }}>{p}%</span>
-          </div>
-          <div className="track"><i style={{ width: `${Math.min(100, p)}%`, background: p >= 85 ? 'var(--danger)' : p >= 50 ? 'var(--amber)' : 'var(--accent)' }} /></div>
-          <div className="between" style={{ marginTop: 8, fontSize: 12.5, fontWeight: 600 }}>
-            <span className="muted">每日平均 {money(dayAvg, trip.sym)}</span>
-            <span style={{ color: 'var(--accent)' }}>剩餘 {money(remaining, trip.sym)}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats */}
-      <div className="pad section">
-        <div className="stat-grid">
-          <div className="stat"><div className="k"><Icon name="check" size={14} /> 已完成行程</div><div className="v">{trip.stats.doneItin}</div><div className="s">共 {trip.days} 天的安排</div></div>
-          <div className="stat"><div className="k"><Icon name="star" size={14} fill /> 收藏地點</div><div className="v">{trip.stats.places}</div><div className="s">必去 / 替代清單</div></div>
-          <div className="stat"><div className="k"><Icon name="image" size={14} /> 旅程照片</div><div className="v">{trip.stats.photos}</div><div className="s">已分日整理</div></div>
-          <div className="stat"><div className="k"><Icon name="clock" size={14} /> 倒數</div><div className="v">{trip.status === 'ongoing' ? `D+${trip.currentDay}` : trip.status === 'completed' ? '已完成' : '—'}</div><div className="s">{trip.status === 'ongoing' ? '旅程進行中' : trip.status === 'completed' ? '回顧已生成' : '出發前準備'}</div></div>
-        </div>
-      </div>
-
       {/* Quick entries */}
       <div className="pad section">
-        <div className="section-title" style={{ marginBottom: 12, fontSize: 16 }}>快速入口</div>
+        <div className="between" style={{ marginBottom: 12 }}>
+          <div className="section-title" style={{ fontSize: 16 }}>快速入口</div>
+          <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>長按右上角圖示可拖曳排序</span>
+        </div>
         <div className="quick-grid">
-          {QUICK.map((q) => (
-            <button key={q.key} className="quick" onClick={() => go(q.key)}>
-              <span className="ic" style={{ background: q.bg, color: q.color }}><Icon name={q.icon} size={21} /></span>
-              <span className="lb">{q.label}</span>
-            </button>
-          ))}
+          {quick.map((q) => {
+            const item = drag.item(q.key)
+            const handle = drag.handle(q.key)
+            return (
+              <button key={q.key} className="quick" onClick={() => go(q.key)} {...item} style={item.style}>
+                <span {...handle} className="quick-grip" aria-label={`拖曳排序：${q.label}`} style={handle.style}><Icon name="dots" size={14} /></span>
+                <span className="ic" style={{ background: q.bg, color: q.color }}><Icon name={q.icon} size={21} /></span>
+                <span className="lb">{q.label}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -176,6 +163,7 @@ export default function TripOverviewScreen() {
           <Icon name="chevronRight" size={18} style={{ color: 'var(--muted)' }} />
         </button>
       </div>
+    </div>
 
       {menu && (
         <div className="sheet-overlay" onClick={() => setMenu(false)}>
@@ -197,6 +185,6 @@ export default function TripOverviewScreen() {
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
