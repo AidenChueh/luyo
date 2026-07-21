@@ -4,7 +4,7 @@ import { useStore } from '../store'
 import { pickImage } from '../lib/image'
 
 export default function CompanionSheet() {
-  const { compSheet, closeCompanion, getCompanions, addCompanion, editCompanion, removeCompanion } = useStore()
+  const { compSheet, closeCompanion, getCompanions, addCompanion, editCompanion, removeCompanion, askConfirm } = useStore()
   const { open, tripId, editId } = compSheet
   const [name, setName] = useState('')
   const [contact, setContact] = useState('')
@@ -24,7 +24,7 @@ export default function CompanionSheet() {
     if (editId) editCompanion(tripId, editId, fields); else addCompanion(tripId, fields)
     closeCompanion()
   }
-  const del = () => { if (confirm('移除這位同行者？')) { removeCompanion(tripId, editId); closeCompanion() } }
+  const del = () => askConfirm({ message: '移除這位同行者？', confirmText: '移除', onConfirm: () => { removeCompanion(tripId, editId); closeCompanion() } })
 
   return (
     <div className="sheet-overlay" onClick={closeCompanion}>

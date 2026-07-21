@@ -7,7 +7,7 @@ import { getMe } from '../lib/settings'
 const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '00', '0', 'del']
 
 export default function AddExpenseSheet() {
-  const { add, closeAdd, addExpense, editExpense, removeExpense, getExpenses, trips, getTrip, getCompanions } = useStore()
+  const { add, closeAdd, addExpense, editExpense, removeExpense, getExpenses, trips, getTrip, getCompanions, askConfirm } = useStore()
   const editId = add.editId
   const tripId = add.tripId || trips.find((t) => t.status === 'ongoing')?.id
   const trip = getTrip(tripId)
@@ -62,7 +62,7 @@ export default function AddExpenseSheet() {
     closeAdd()
   }
   const doDelete = () => {
-    if (confirm('刪除這筆支出？')) { removeExpense(tripId, editId); closeAdd() }
+    askConfirm({ message: '刪除這筆支出？', onConfirm: () => { removeExpense(tripId, editId); closeAdd() } })
   }
 
   return (

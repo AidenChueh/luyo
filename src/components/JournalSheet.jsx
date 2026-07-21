@@ -8,7 +8,7 @@ import { pickImage } from '../lib/image'
 const TODAY = '2026-06-14'
 
 export default function JournalSheet() {
-  const { journalSheet, closeJournal, getJournal, addJournal, editJournal, removeJournal } = useStore()
+  const { journalSheet, closeJournal, getJournal, addJournal, editJournal, removeJournal, askConfirm } = useStore()
   const { open, tripId, editId } = journalSheet
 
   const [date, setDate] = useState(TODAY)
@@ -36,7 +36,7 @@ export default function JournalSheet() {
     else addJournal(tripId, fields)
     closeJournal()
   }
-  const del = () => { if (confirm('刪除這篇日誌？')) { removeJournal(tripId, editId); closeJournal() } }
+  const del = () => askConfirm({ message: '刪除這篇日誌？', onConfirm: () => { removeJournal(tripId, editId); closeJournal() } })
 
   return (
     <div className="sheet-overlay" onClick={closeJournal}>

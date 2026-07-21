@@ -6,7 +6,7 @@ import { extractFlightsFromImage } from '../lib/ai'
 import { decimalInput } from '../lib/format'
 
 export default function FlightSheet() {
-  const { flightSheet, closeFlight, getFlights, addFlight, editFlight, removeFlight } = useStore()
+  const { flightSheet, closeFlight, getFlights, addFlight, editFlight, removeFlight, askConfirm } = useStore()
   const { open, tripId, editId } = flightSheet
   const [v, setV] = useState({})
   const [scanning, setScanning] = useState(false)
@@ -30,7 +30,7 @@ export default function FlightSheet() {
     if (editId) editFlight(tripId, editId, v); else addFlight(tripId, v)
     closeFlight()
   }
-  const del = () => { if (confirm('刪除這筆航班？')) { removeFlight(tripId, editId); closeFlight() } }
+  const del = () => askConfirm({ message: '刪除這筆航班？', onConfirm: () => { removeFlight(tripId, editId); closeFlight() } })
 
   // 截圖只在記憶體中傳給 API，不寫入 localStorage
   const scan = () => {

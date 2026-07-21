@@ -350,3 +350,8 @@
 - 範圍：src/components/ItinSheet.jsx、src/store.jsx
 - 做了什麼：行程新增「實際花費」欄位並同步到記帳。資料模型本來就有 act 欄位（卡片會優先顯示實際花費），只是沒有輸入處，新增後與預估花費並排為雙欄（沿用 date-row 的 grid 均分，窄螢幕自動降為單欄）。記帳同步沿用 v1.13 的 syncLinkedExpense：addItin 改為先產生 id 再建立連動支出，editItin 更新、removeItin 移除，實際花費清為 0 時支出一併消失。行程只記天數而記帳需要日期，故以旅程起日推算（Day N = start + N-1，已驗證跨月正確）；行程分類對應到記帳分類（景點→門票、餐廳→餐飲、交通→交通、購物→購物、住宿→住宿，未知→其他）。copyItinDay 的複製項目會取得新 id，也各自建立對應支出以維持「有實際花費就有支出」的一致性。build 驗證通過
 - 為什麼：使用者要求在編輯行程內增加實際花費欄位並同步到記帳
+
+## 2026-07-21 11:22（v1.25）
+- 範圍：src/components/ConfirmDialog.jsx（新增）、src/store.jsx、src/App.jsx、JournalSheet.jsx、FlightSheet.jsx、StaySheet.jsx、PlaceSheet.jsx、CompanionSheet.jsx、ItinSheet.jsx、AddExpenseSheet.jsx、src/screens/GalleryScreen.jsx、StubScreen.jsx、TripOverviewScreen.jsx
+- 做了什麼：修「刪除日誌沒反應」。先確認症狀為按下按鈕後完全沒跳確認視窗，據此判定根因是瀏覽器（PWA standalone 常見）擋掉原生 `window.confirm()`，函式直接回傳 false，刪除分支永遠不執行——刪除邏輯本身正確。這是全 App 共通問題，10 處 confirm() 全部受影響，並非日誌獨有。改法：store 加 confirmState/askConfirm/closeConfirm，新增 ConfirmDialog 元件沿用既有 bottom sheet 樣式，於 App.jsx 最後渲染以確保疊在其他 sheet 之上；10 處呼叫點（日誌、航班、住宿、地點、同行者、行程、支出、照片、重設資料、刪除旅程）全部改用 askConfirm，訊息文字沿用原本內容，移除同行者與重設資料改用對應的確認字樣。build 驗證通過，並確認打包結果已無原生 confirm 呼叫
+- 為什麼：使用者回報刪除日誌沒反應

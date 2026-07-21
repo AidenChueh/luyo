@@ -16,7 +16,7 @@ const Group = ({ title, children }) => (
 const Toggle = ({ on }) => <span className={`toggle ${on ? 'on' : ''}`} aria-hidden="true"><i /></span>
 
 export default function StubScreen() {
-  const { reset } = useStore()
+  const { reset, askConfirm } = useStore()
   const [installEvt, setInstallEvt] = useState(null)
   const [installed, setInstalled] = useState(false)
   const [theme, setTheme] = useState(getTheme())
@@ -53,7 +53,7 @@ export default function StubScreen() {
   }, [])
 
   const doReset = () => {
-    if (confirm('重設為範例資料？目前在記帳新增的紀錄會被清除。')) reset()
+    askConfirm({ message: '重設為範例資料？目前在記帳新增的紀錄會被清除。', confirmText: '重設', onConfirm: reset })
   }
   const doInstall = async () => {
     if (!installEvt) { alert('此瀏覽器可從網址列 / 選單的「安裝」或「加入主畫面」安裝。'); return }
@@ -161,7 +161,7 @@ export default function StubScreen() {
       <Group title="關於">
         <div className="set-row" style={{ cursor: 'default' }}>
           <span className="set-ic"><Icon name="sparkles" size={18} /></span>
-          <span className="set-label">luyo<span className="muted" style={{ fontWeight: 500, fontSize: 11.5, display: 'block' }}>個人旅遊規劃 · 原型 v1.24</span></span>
+          <span className="set-label">luyo<span className="muted" style={{ fontWeight: 500, fontSize: 11.5, display: 'block' }}>個人旅遊規劃 · 原型 v1.25</span></span>
         </div>
       </Group>
 

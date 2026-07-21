@@ -29,7 +29,7 @@ const orderedQuick = (order) => {
 export default function TripOverviewScreen() {
   const { id } = useParams()
   const nav = useNavigate()
-  const { getTrip, openTripSheet, deleteTrip, editTrip } = useStore()
+  const { getTrip, openTripSheet, deleteTrip, editTrip, askConfirm } = useStore()
   const [menu, setMenu] = useState(false)
   const [quick, setQuick] = useState(() => orderedQuick(getQuickOrder()))
   const drag = useDragSort(quick.map((q) => q.key), (order) => {
@@ -41,10 +41,10 @@ export default function TripOverviewScreen() {
 
   const doDelete = () => {
     setMenu(false)
-    if (confirm(`刪除「${trip.name}」？此旅程與其記帳紀錄將一併移除。`)) {
-      deleteTrip(id)
-      nav('/')
-    }
+    askConfirm({
+      message: `刪除「${trip.name}」？此旅程與其記帳紀錄將一併移除。`,
+      onConfirm: () => { deleteTrip(id); nav('/') },
+    })
   }
 
   const doShare = async () => {

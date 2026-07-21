@@ -18,7 +18,7 @@ function Tile({ p, onOpen }) {
 export default function GalleryScreen() {
   const { id } = useParams()
   const nav = useNavigate()
-  const { getTrip, getPhotos, openPhoto, removePhoto } = useStore()
+  const { getTrip, getPhotos, openPhoto, removePhoto, askConfirm } = useStore()
   const trip = getTrip(id)
   const [lb, setLb] = useState(null)
   if (!trip) return null
@@ -70,7 +70,7 @@ export default function GalleryScreen() {
           <div className="lb-top">
             <button className="iconbtn" style={{ background: 'rgba(255,255,255,.16)', color: '#fff' }} onClick={() => setLb(null)} aria-label="關閉"><Icon name="chevronLeft" size={20} /></button>
             <button className="iconbtn" style={{ background: 'rgba(255,255,255,.16)', color: '#fff' }}
-              onClick={(e) => { e.stopPropagation(); if (confirm('刪除這張照片？')) { removePhoto(id, lb.id); setLb(null) } }} aria-label="刪除照片">
+              onClick={(e) => { e.stopPropagation(); askConfirm({ message: '刪除這張照片？', onConfirm: () => { removePhoto(id, lb.id); setLb(null) } }) }} aria-label="刪除照片">
               <Icon name="trash" size={19} />
             </button>
           </div>

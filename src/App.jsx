@@ -9,6 +9,7 @@ import FlightSheet from './components/FlightSheet'
 import StaySheet from './components/StaySheet'
 import PhotoSheet from './components/PhotoSheet'
 import CompanionSheet from './components/CompanionSheet'
+import ConfirmDialog from './components/ConfirmDialog'
 import HomeScreen from './screens/HomeScreen'
 import TripsScreen from './screens/TripsScreen'
 import TripOverviewScreen from './screens/TripOverviewScreen'
@@ -59,6 +60,8 @@ export default function App() {
         <StaySheet />
         <PhotoSheet />
         <CompanionSheet />
+        {/* 放最後：確認彈窗必須疊在其他 sheet 之上 */}
+        <ConfirmDialog />
       </div>
     </div>
   )

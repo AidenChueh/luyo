@@ -4,7 +4,7 @@ import { useStore } from '../store'
 import { decimalInput } from '../lib/format'
 
 export default function StaySheet() {
-  const { staySheet, closeStay, getStays, addStay, editStay, removeStay } = useStore()
+  const { staySheet, closeStay, getStays, addStay, editStay, removeStay, askConfirm } = useStore()
   const { open, tripId, editId } = staySheet
   const [v, setV] = useState({})
 
@@ -23,7 +23,7 @@ export default function StaySheet() {
     if (editId) editStay(tripId, editId, fields); else addStay(tripId, fields)
     closeStay()
   }
-  const del = () => { if (confirm('刪除這筆住宿？')) { removeStay(tripId, editId); closeStay() } }
+  const del = () => askConfirm({ message: '刪除這筆住宿？', onConfirm: () => { removeStay(tripId, editId); closeStay() } })
 
   return (
     <div className="sheet-overlay" onClick={closeStay}>

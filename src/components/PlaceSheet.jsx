@@ -6,7 +6,7 @@ import { pickImage } from '../lib/image'
 import { geocode } from '../lib/geocode'
 
 export default function PlaceSheet() {
-  const { placeSheet, closePlace, getPlaces, addPlace, editPlace, removePlace, getTrip } = useStore()
+  const { placeSheet, closePlace, getPlaces, addPlace, editPlace, removePlace, getTrip, askConfirm } = useStore()
   const { open, tripId, editId } = placeSheet
 
   const [name, setName] = useState('')
@@ -60,7 +60,7 @@ export default function PlaceSheet() {
     else addPlace(tripId, fields)
     closePlace()
   }
-  const del = () => { if (confirm('刪除這個地點？')) { removePlace(tripId, editId); closePlace() } }
+  const del = () => askConfirm({ message: '刪除這個地點？', onConfirm: () => { removePlace(tripId, editId); closePlace() } })
 
   return (
     <div className="sheet-overlay" onClick={closePlace}>

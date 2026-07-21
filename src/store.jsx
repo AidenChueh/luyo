@@ -74,6 +74,8 @@ export function StoreProvider({ children }) {
   const [staySheet, setStaySheet] = useState({ open: false, tripId: null, editId: null })
   const [photoSheet, setPhotoSheet] = useState({ open: false, tripId: null })
   const [compSheet, setCompSheet] = useState({ open: false, tripId: null, editId: null })
+  // 自製確認彈窗：PWA/部分瀏覽器會擋掉原生 confirm()，導致刪除按鈕完全沒反應
+  const [confirmState, setConfirmState] = useState({ open: false, message: '', confirmText: '刪除', onConfirm: null })
 
   useEffect(() => { persist(EXP_KEY, byTrip) }, [byTrip])
   useEffect(() => { persist(TRIP_KEY, tripData) }, [tripData])
@@ -409,8 +411,11 @@ export function StoreProvider({ children }) {
       compSheet,
       openCompanion: (tripId, editId = null) => setCompSheet({ open: true, tripId, editId }),
       closeCompanion: () => setCompSheet((s) => ({ ...s, open: false })),
+      confirmState,
+      askConfirm: (opts) => setConfirmState({ open: true, message: '', confirmText: '刪除', ...opts }),
+      closeConfirm: () => setConfirmState((s) => ({ ...s, open: false })),
     }),
-    [byTrip, tripData, prepByTrip, itinByTrip, placeByTrip, journalByTrip, flightByTrip, stayByTrip, photoByTrip, compByTrip, add, tripSheet, itinSheet, placeSheet, journalSheet, flightSheet, staySheet, photoSheet, compSheet],
+    [byTrip, tripData, prepByTrip, itinByTrip, placeByTrip, journalByTrip, flightByTrip, stayByTrip, photoByTrip, compByTrip, add, tripSheet, itinSheet, placeSheet, journalSheet, flightSheet, staySheet, photoSheet, compSheet, confirmState],
   )
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>
 }

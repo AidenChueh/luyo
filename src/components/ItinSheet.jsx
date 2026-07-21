@@ -5,7 +5,7 @@ import { decimalInput } from '../lib/format'
 import { ITIN_CAT } from '../data/seed'
 
 export default function ItinSheet() {
-  const { itinSheet, closeItin, getItinerary, addItin, editItin, removeItin } = useStore()
+  const { itinSheet, closeItin, getItinerary, addItin, editItin, removeItin, askConfirm } = useStore()
   const { open, tripId, day, editId, prefill } = itinSheet
 
   const [title, setTitle] = useState('')
@@ -42,7 +42,7 @@ export default function ItinSheet() {
     closeItin()
   }
   const del = () => {
-    if (confirm('刪除這個行程？')) { removeItin(tripId, day, editId); closeItin() }
+    askConfirm({ message: '刪除這個行程？', onConfirm: () => { removeItin(tripId, day, editId); closeItin() } })
   }
 
   return (
