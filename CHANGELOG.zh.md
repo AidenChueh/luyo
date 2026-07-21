@@ -316,3 +316,8 @@
 - 範圍：src/lib/format.js、src/components/FlightSheet.jsx、src/lib/ai.js
 - 做了什麼：機票價格支援小數。原本輸入框以 `replace(/[^0-9]/g,'')` 把小數點濾掉，且 money() 是 `Math.round(n)`，兩處都要改才有意義。format.js 新增 decimalInput（只留數字與單一小數點）供輸入使用；money() 改為有小數才顯示到分位、整數維持原樣，確認 1234→¥1,234、36000→NT$36,000 等既有整數金額顯示與舊版完全一致（全站無回歸），另順帶修掉傳入 undefined 時顯示 ¥NaN 的問題。FlightSheet 價格欄改用 decimalInput 並將 inputMode 改為 decimal 讓手機跳出含小數點的鍵盤；lib/ai.js 截圖辨識的價格清洗同步放行小數。build 驗證通過
 - 為什麼：使用者回報機票價格沒辦法輸入小數點
+
+## 2026-07-21 10:11（v1.19）
+- 範圍：src/components/StaySheet.jsx、AddTripSheet.jsx、ItinSheet.jsx、src/screens/PrepScreen.jsx
+- 做了什麼：其餘金額欄位一併支援小數，全部改用 v1.18 的 decimalInput 並將 inputMode 改為 decimal——住宿價格、旅程總預算、行程預估花費、行前準備的購物單價。其中行程預估花費是這次全檔掃描才發現的第四處，先前回報時漏列。購物「數量」維持整數限定（件數不需小數）。掃描確認除數量外已無其他整數限定的金額欄位。build 驗證通過
+- 為什麼：使用者要求把其餘金額欄位的小數限制一起放開

@@ -4,7 +4,7 @@ import Icon from './Icon'
 import { useStore } from '../store'
 import { pickImage } from '../lib/image'
 import { getPrefs } from '../lib/settings'
-import { parseYMD } from '../lib/format'
+import { parseYMD, decimalInput } from '../lib/format'
 
 const CURRENCIES = [
   { code: 'TWD', sym: 'NT$' },
@@ -153,7 +153,7 @@ export default function AddTripSheet() {
           </div>
           <div className="field" style={{ flex: 1 }}>
             <label>總預算（{sym}）</label>
-            <input type="text" inputMode="numeric" value={budget} onChange={(e) => setBudget(e.target.value.replace(/[^0-9]/g, ''))} placeholder="0" />
+            <input type="text" inputMode="decimal" value={budget} onChange={(e) => setBudget(decimalInput(e.target.value))} placeholder="0" />
           </div>
         </div>
 

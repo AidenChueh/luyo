@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import Icon from '../components/Icon'
 import { useStore } from '../store'
 import { PREP_PRIORITY, PACK_CATS } from '../data/seed'
-import { money } from '../lib/format'
+import { money, decimalInput } from '../lib/format'
 
 const TABS = [
   { key: 'todo', label: '待辦', icon: 'check' },
@@ -139,7 +139,7 @@ export default function PrepScreen() {
           {tab === 'shopping' && (
             <>
               <input className="addbar-num" value={qty} onChange={(e) => setQty(e.target.value.replace(/[^0-9]/g, ''))} placeholder="數" aria-label="數量" />
-              <input className="addbar-num addbar-price" value={price} onChange={(e) => setPrice(e.target.value.replace(/[^0-9]/g, ''))} placeholder="單價" aria-label="單價" />
+              <input className="addbar-num addbar-price" inputMode="decimal" value={price} onChange={(e) => setPrice(decimalInput(e.target.value))} placeholder="單價" aria-label="單價" />
             </>
           )}
           <button className="add-btn" onClick={submit} disabled={!draft.trim()} aria-label="新增"><Icon name="plus" size={22} /></button>

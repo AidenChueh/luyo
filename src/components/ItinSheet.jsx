@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Icon from './Icon'
 import { useStore } from '../store'
+import { decimalInput } from '../lib/format'
 import { ITIN_CAT } from '../data/seed'
 
 export default function ItinSheet() {
@@ -94,7 +95,7 @@ export default function ItinSheet() {
 
         <div className="field">
           <label>預估花費</label>
-          <input type="text" inputMode="numeric" value={est} onChange={(e) => setEst(e.target.value.replace(/[^0-9]/g, ''))} placeholder="0" />
+          <input type="text" inputMode="decimal" value={est} onChange={(e) => setEst(decimalInput(e.target.value))} placeholder="0" />
         </div>
 
         <button className="btn btn-primary btn-block" style={{ marginTop: 18, opacity: valid ? 1 : 0.5 }} onClick={submit} disabled={!valid}>
