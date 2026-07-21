@@ -201,30 +201,59 @@ export function StoreProvider({ children }) {
     })
 
   // ---- 行程時間軸 ----
+  // 行程項目只記天數，記帳需要日期 → 由旅程起日推算
+  const pad2 = (n) => String(n).padStart(2, '0')
+  const dayDate = (tripId, day) => {
+    const t = getTrip(tripId)
+    if (!t?.start) return undefined
+    const [y, m, d] = t.start.split('-').map(Number)
+    const dt = new Date(y, m - 1, d)
+    dt.setDate(dt.getDate() + (Number(day) || 1) - 1)
+    return `${dt.getFullYear()}-${pad2(dt.getMonth() + 1)}-${pad2(dt.getDate())}`
+  }
+  const ITIN_TO_CAT = { sight: 'ticket', food: 'food', transport: 'transport', shopping: 'shopping', hotel: 'hotel' }
+  const itinExpense = (tripId, day, it) => ({
+    date: dayDate(tripId, day),
+    cat: ITIN_TO_CAT[it.cat] || 'other',
+    title: it.title || '行程',
+    amt: Number(it.act) || 0,
+    loc: it.loc || '',
+  })
+
   const getItinerary = (tripId) => itinByTrip[tripId] || {}
-  const addItin = (tripId, day, item) =>
+  const addItin = (tripId, day, item) => {
+    const iid = uid('i')
     setItinByTrip((prev) => {
       const trip = prev[tripId] || {}
       const list = trip[day] || []
-      return { ...prev, [tripId]: { ...trip, [day]: [...list, { id: uid('i'), ...item }] } }
+      return { ...prev, [tripId]: { ...trip, [day]: [...list, { id: iid, ...item }] } }
     })
-  const editItin = (tripId, day, itemId, patch) =>
+    syncLinkedExpense(tripId, `lnk-${iid}`, itinExpense(tripId, day, item))
+  }
+  const editItin = (tripId, day, itemId, patch) => {
     setItinByTrip((prev) => {
       const list = (prev[tripId]?.[day] || []).map((it) => (it.id === itemId ? { ...it, ...patch } : it))
       return { ...prev, [tripId]: { ...prev[tripId], [day]: list } }
     })
-  const removeItin = (tripId, day, itemId) =>
+    syncLinkedExpense(tripId, `lnk-${itemId}`, itinExpense(tripId, day, patch))
+  }
+  const removeItin = (tripId, day, itemId) => {
     setItinByTrip((prev) => {
       const list = (prev[tripId]?.[day] || []).filter((it) => it.id !== itemId)
       return { ...prev, [tripId]: { ...prev[tripId], [day]: list } }
     })
-  const copyItinDay = (tripId, fromDay, toDay) =>
+    syncLinkedExpense(tripId, `lnk-${itemId}`, null)
+  }
+  const copyItinDay = (tripId, fromDay, toDay) => {
+    const src = itinByTrip[tripId]?.[fromDay] || []
+    const cloned = src.map((it) => ({ ...it, id: uid('i') }))
     setItinByTrip((prev) => {
-      const src = prev[tripId]?.[fromDay] || []
       const dst = prev[tripId]?.[toDay] || []
-      const cloned = src.map((it) => ({ ...it, id: uid('i') }))
       return { ...prev, [tripId]: { ...prev[tripId], [toDay]: [...dst, ...cloned] } }
     })
+    // 複製出來的是各自獨立的行程，有實際花費就各自建立對應支出
+    cloned.forEach((it) => syncLinkedExpense(tripId, `lnk-${it.id}`, itinExpense(tripId, toDay, it)))
+  }
 
   // ---- 地點庫 ----
   const getPlaces = (tripId) => placeByTrip[tripId] || []

@@ -345,3 +345,8 @@
 - 範圍：src/components/ItinSheet.jsx、src/screens/ItineraryScreen.jsx
 - 做了什麼：行程卡片上的「Google Maps」原本是原型時期留下的裝飾文字——不是連結、點了沒反應，表單也沒有對應欄位。ItinSheet 新增「Google Maps 連結」欄位（比照地點頁既有做法，inputMode=url，可留空），存入 maps 欄位；卡片改為有填才顯示為可點開的連結（target=_blank、rel=noreferrer，並 stopPropagation 避免觸發卡片本身的編輯），沒填則不顯示，以空 span 佔位維持 space-between 讓花費仍靠右。build 驗證通過
 - 為什麼：使用者發現行程卡片顯示 Google Maps 但表單沒有可輸入的地方，選擇新增欄位讓它能實際使用
+
+## 2026-07-21 11:05（v1.24）
+- 範圍：src/components/ItinSheet.jsx、src/store.jsx
+- 做了什麼：行程新增「實際花費」欄位並同步到記帳。資料模型本來就有 act 欄位（卡片會優先顯示實際花費），只是沒有輸入處，新增後與預估花費並排為雙欄（沿用 date-row 的 grid 均分，窄螢幕自動降為單欄）。記帳同步沿用 v1.13 的 syncLinkedExpense：addItin 改為先產生 id 再建立連動支出，editItin 更新、removeItin 移除，實際花費清為 0 時支出一併消失。行程只記天數而記帳需要日期，故以旅程起日推算（Day N = start + N-1，已驗證跨月正確）；行程分類對應到記帳分類（景點→門票、餐廳→餐飲、交通→交通、購物→購物、住宿→住宿，未知→其他）。copyItinDay 的複製項目會取得新 id，也各自建立對應支出以維持「有實際花費就有支出」的一致性。build 驗證通過
+- 為什麼：使用者要求在編輯行程內增加實際花費欄位並同步到記帳

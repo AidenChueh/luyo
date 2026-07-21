@@ -15,6 +15,7 @@ export default function ItinSheet() {
   const [loc, setLoc] = useState('')
   const [note, setNote] = useState('')
   const [est, setEst] = useState('')
+  const [act, setAct] = useState('')
   const [maps, setMaps] = useState('')
 
   useEffect(() => {
@@ -22,11 +23,11 @@ export default function ItinSheet() {
     const it = editId ? (getItinerary(tripId)[day] || []).find((x) => x.id === editId) : null
     if (it) {
       setTitle(it.title); setCat(it.cat); setStart(it.start); setEnd(it.end)
-      setLoc(it.loc || ''); setNote(it.note || ''); setEst(String(it.est || '')); setMaps(it.maps || '')
+      setLoc(it.loc || ''); setNote(it.note || ''); setEst(String(it.est || '')); setAct(String(it.act || '')); setMaps(it.maps || '')
     } else {
       setTitle(prefill?.title || ''); setCat(prefill?.cat || 'sight')
       setStart('09:00'); setEnd('10:00')
-      setLoc(prefill?.loc || ''); setNote(prefill?.note || ''); setEst(''); setMaps('')
+      setLoc(prefill?.loc || ''); setNote(prefill?.note || ''); setEst(''); setAct(''); setMaps('')
     }
   }, [open, editId, day, tripId])
 
@@ -35,9 +36,9 @@ export default function ItinSheet() {
   const valid = title.trim() && start && end
   const submit = () => {
     if (!valid) return
-    const fields = { title: title.trim(), cat, start, end, loc: loc.trim(), note: note.trim(), est: Number(est) || 0, maps: maps.trim() }
+    const fields = { title: title.trim(), cat, start, end, loc: loc.trim(), note: note.trim(), est: Number(est) || 0, act: Number(act) || 0, maps: maps.trim() }
     if (editId) editItin(tripId, day, editId, fields)
-    else addItin(tripId, day, { ...fields, act: 0, rating: 0 })
+    else addItin(tripId, day, { ...fields, rating: 0 })
     closeItin()
   }
   const del = () => {
@@ -94,10 +95,17 @@ export default function ItinSheet() {
           <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="（可留空）" />
         </div>
 
-        <div className="field">
-          <label>預估花費</label>
-          <input type="text" inputMode="decimal" value={est} onChange={(e) => setEst(decimalInput(e.target.value))} placeholder="0" />
+        <div className="row date-row" style={{ gap: 12 }}>
+          <div className="field" style={{ flex: 1 }}>
+            <label>預估花費</label>
+            <input type="text" inputMode="decimal" value={est} onChange={(e) => setEst(decimalInput(e.target.value))} placeholder="0" />
+          </div>
+          <div className="field" style={{ flex: 1 }}>
+            <label>實際花費</label>
+            <input type="text" inputMode="decimal" value={act} onChange={(e) => setAct(decimalInput(e.target.value))} placeholder="0" />
+          </div>
         </div>
+        <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>填了實際花費會自動同步到記帳</div>
 
         <div className="field">
           <label>Google Maps 連結（可留空）</label>
