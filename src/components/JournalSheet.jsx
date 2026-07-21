@@ -67,7 +67,7 @@ export default function JournalSheet() {
 
         <div className="field">
           <label>標題</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="今天的標題" autoFocus />
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="今天的標題" />
         </div>
 
         <div className="field">

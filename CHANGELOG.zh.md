@@ -355,3 +355,9 @@
 - 範圍：src/components/ConfirmDialog.jsx（新增）、src/store.jsx、src/App.jsx、JournalSheet.jsx、FlightSheet.jsx、StaySheet.jsx、PlaceSheet.jsx、CompanionSheet.jsx、ItinSheet.jsx、AddExpenseSheet.jsx、src/screens/GalleryScreen.jsx、StubScreen.jsx、TripOverviewScreen.jsx
 - 做了什麼：修「刪除日誌沒反應」。先確認症狀為按下按鈕後完全沒跳確認視窗，據此判定根因是瀏覽器（PWA standalone 常見）擋掉原生 `window.confirm()`，函式直接回傳 false，刪除分支永遠不執行——刪除邏輯本身正確。這是全 App 共通問題，10 處 confirm() 全部受影響，並非日誌獨有。改法：store 加 confirmState/askConfirm/closeConfirm，新增 ConfirmDialog 元件沿用既有 bottom sheet 樣式，於 App.jsx 最後渲染以確保疊在其他 sheet 之上；10 處呼叫點（日誌、航班、住宿、地點、同行者、行程、支出、照片、重設資料、刪除旅程）全部改用 askConfirm，訊息文字沿用原本內容，移除同行者與重設資料改用對應的確認字樣。build 驗證通過，並確認打包結果已無原生 confirm 呼叫
 - 為什麼：使用者回報刪除日誌沒反應
+
+## 2026-07-21 21:32
+- 版號：v1.26
+- 範圍：src/components/JournalSheet.jsx
+- 做了什麼：移除標題輸入框的 autoFocus
+- 為什麼：開啟日誌編輯面板時，React 在掛載階段對標題 input 呼叫 focus()，瀏覽器為了讓輸入框可見而捲動 .sheet 容器（且掛載時 sheet 正在 translateY 動畫中，捲動量被過度計算），導致畫面停在照片／儲存／刪除區並自動彈出手機鍵盤
