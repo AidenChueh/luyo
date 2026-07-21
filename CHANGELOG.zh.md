@@ -361,3 +361,9 @@
 - 範圍：src/components/JournalSheet.jsx
 - 做了什麼：移除標題輸入框的 autoFocus
 - 為什麼：開啟日誌編輯面板時，React 在掛載階段對標題 input 呼叫 focus()，瀏覽器為了讓輸入框可見而捲動 .sheet 容器（且掛載時 sheet 正在 translateY 動畫中，捲動量被過度計算），導致畫面停在照片／儲存／刪除區並自動彈出手機鍵盤
+
+## 2026-07-21 21:35
+- 版號：v1.27
+- 範圍：src/components/PlaceSheet.jsx
+- 做了什麼：移除名稱輸入框的 autoFocus
+- 為什麼：與日誌面板同一個問題，開啟地點面板時掛載階段的 focus 造成 .sheet 容器自動捲動並彈出手機鍵盤

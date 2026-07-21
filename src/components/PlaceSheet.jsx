@@ -74,7 +74,7 @@ export default function PlaceSheet() {
 
         <div className="field" style={{ marginTop: 16 }}>
           <label>名稱</label>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：清水寺" autoFocus />
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：清水寺" />
         </div>
 
         <div className="field">
