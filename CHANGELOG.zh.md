@@ -311,3 +311,8 @@
 - 範圍：src/lib/rates.js、src/main.jsx、src/screens/ExpensesScreen.jsx、BudgetScreen.jsx
 - 做了什麼：匯率改為自動抓取實際值。根因是 rates.js 原本就是原型階段寫死的靜態表（註解也寫明「正式版可接 API」），從未更新，除美金外多數幣別已偏離 5% 上下（澳幣 21.3 vs 實際 22.63，差 6.2%）。改法：接 open.er-api.com（免 API key、免付費、每日更新），啟動時背景抓取並存入 localStorage（`luyo:rates:v1`），一天更新一次；模組載入時先套用快取讓首次 render 就有值。API 回傳為 1 TWD = N 外幣，程式內轉為 1 外幣 = N 台幣；只取 App 開放的 9 種幣別，並驗證每個值為有限正數才採用。抓取失敗、離線或資料異常時退回原本的靜態表，不會壞掉。匯率為模組層狀態，另提供 useRates() 訂閱讓 ExpensesScreen 與 BudgetScreen 在更新完成後重繪「≈ NT$」換算；匯率換算頁的「原型固定匯率」改為顯示實際更新時間（無資料時顯示「離線備援匯率」）。BudgetScreen 的 useRates() 置於早退之前以符合 hooks 規則。build 驗證通過，並以實際 API 資料驗算換算方向與往返一致性
 - 為什麼：使用者回報澳幣匯率與實際不符，確認為靜態表過時後選擇接免費 API 自動更新
+
+## 2026-07-21 10:08（v1.18）
+- 範圍：src/lib/format.js、src/components/FlightSheet.jsx、src/lib/ai.js
+- 做了什麼：機票價格支援小數。原本輸入框以 `replace(/[^0-9]/g,'')` 把小數點濾掉，且 money() 是 `Math.round(n)`，兩處都要改才有意義。format.js 新增 decimalInput（只留數字與單一小數點）供輸入使用；money() 改為有小數才顯示到分位、整數維持原樣，確認 1234→¥1,234、36000→NT$36,000 等既有整數金額顯示與舊版完全一致（全站無回歸），另順帶修掉傳入 undefined 時顯示 ¥NaN 的問題。FlightSheet 價格欄改用 decimalInput 並將 inputMode 改為 decimal 讓手機跳出含小數點的鍵盤；lib/ai.js 截圖辨識的價格清洗同步放行小數。build 驗證通過
+- 為什麼：使用者回報機票價格沒辦法輸入小數點

@@ -161,7 +161,7 @@ export default function StubScreen() {
       <Group title="關於">
         <div className="set-row" style={{ cursor: 'default' }}>
           <span className="set-ic"><Icon name="sparkles" size={18} /></span>
-          <span className="set-label">luyo<span className="muted" style={{ fontWeight: 500, fontSize: 11.5, display: 'block' }}>個人旅遊規劃 · 原型 v1.17</span></span>
+          <span className="set-label">luyo<span className="muted" style={{ fontWeight: 500, fontSize: 11.5, display: 'block' }}>個人旅遊規劃 · 原型 v1.18</span></span>
         </div>
       </Group>
 

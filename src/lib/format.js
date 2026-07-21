@@ -1,5 +1,18 @@
-export const money = (n, sym = '¥') =>
-  sym + Math.round(n).toLocaleString('en-US')
+// 有小數才顯示到分位，整數金額維持原本不帶小數的樣子
+export const money = (n, sym = '¥') => {
+  const v = Number(n) || 0
+  const cents = Math.abs(v % 1) >= 0.005
+  return sym + v.toLocaleString('en-US', cents
+    ? { minimumFractionDigits: 2, maximumFractionDigits: 2 }
+    : { maximumFractionDigits: 0 })
+}
+
+// 金額輸入：只留數字與單一小數點
+export const decimalInput = (s) => {
+  const c = String(s ?? '').replace(/[^0-9.]/g, '')
+  const i = c.indexOf('.')
+  return i === -1 ? c : c.slice(0, i + 1) + c.slice(i + 1).replace(/\./g, '')
+}
 
 export const parseYMD = (s) => {
   const [y, m, d] = s.split('-').map(Number)

@@ -3,6 +3,7 @@ import Icon from './Icon'
 import { useStore } from '../store'
 import { pickImage } from '../lib/image'
 import { extractFlightsFromImage } from '../lib/ai'
+import { decimalInput } from '../lib/format'
 
 export default function FlightSheet() {
   const { flightSheet, closeFlight, getFlights, addFlight, editFlight, removeFlight } = useStore()
@@ -137,7 +138,7 @@ export default function FlightSheet() {
           <div className="field" style={{ flex: 1 }}><label>座位</label><input type="text" value={v.seat || ''} onChange={set('seat')} placeholder="34A / 34B" /></div>
         </div>
         <div className="field"><label>行李額度</label><input type="text" value={v.baggage || ''} onChange={set('baggage')} placeholder="23kg × 2" /></div>
-        <div className="field"><label>價格（會同步到記帳）</label><input type="text" inputMode="numeric" value={v.price ?? ''} onChange={(e) => setV((p) => ({ ...p, price: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="0" /></div>
+        <div className="field"><label>價格（會同步到記帳）</label><input type="text" inputMode="decimal" value={v.price ?? ''} onChange={(e) => setV((p) => ({ ...p, price: decimalInput(e.target.value) }))} placeholder="0" /></div>
 
         <button className="btn btn-primary btn-block" style={{ marginTop: 16, opacity: valid ? 1 : 0.5 }} onClick={submit} disabled={!valid}>
           <Icon name="check" size={19} /> {editId ? '儲存變更' : '新增航班'}

@@ -251,7 +251,7 @@ const cleanLeg = (raw) => {
   const leg = {}
   for (const k of FLIGHT_FIELDS) leg[k] = s(k)
   leg.dir = leg.dir === 'return' ? 'return' : 'outbound'
-  leg.price = leg.price.replace(/[^0-9]/g, '')
+  leg.price = leg.price.replace(/[^0-9.]/g, '').replace(/\.(?=.*\.)/g, '')
   if (!/^\d{4}-\d{2}-\d{2}$/.test(leg.date)) leg.date = ''
   if (!/^\d{2}:\d{2}$/.test(leg.dep)) leg.dep = ''
   if (!/^\d{2}:\d{2}$/.test(leg.arr)) leg.arr = ''
