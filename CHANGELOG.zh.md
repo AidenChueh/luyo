@@ -340,3 +340,8 @@
 - 範圍：src/components/FlightSheet.jsx、src/screens/LogisticsScreen.jsx
 - 做了什麼：航班的行李額度改為只輸入數字，單位 kg 固定顯示在輸入框右側（絕對定位、pointer-events: none，不影響點擊與游標），輸入沿用 decimalInput 允許小數並將 inputMode 設為 decimal。既有資料為自由文字（種子資料是「23kg × 2」），編輯時以 `match(/[\d.]+/)` 只取開頭數字帶入；機票卡片顯示端加 baggageText——純數字才補上 kg，非純數字的舊值原樣輸出，避免出現「23kg × 2kg」。以新舊值各四種情境驗證顯示與帶入結果皆正確。build 驗證通過
 - 為什麼：使用者要求行李額度欄位預設單位 kg，不需自行輸入
+
+## 2026-07-21 11:01（v1.23）
+- 範圍：src/components/ItinSheet.jsx、src/screens/ItineraryScreen.jsx
+- 做了什麼：行程卡片上的「Google Maps」原本是原型時期留下的裝飾文字——不是連結、點了沒反應，表單也沒有對應欄位。ItinSheet 新增「Google Maps 連結」欄位（比照地點頁既有做法，inputMode=url，可留空），存入 maps 欄位；卡片改為有填才顯示為可點開的連結（target=_blank、rel=noreferrer，並 stopPropagation 避免觸發卡片本身的編輯），沒填則不顯示，以空 span 佔位維持 space-between 讓花費仍靠右。build 驗證通過
+- 為什麼：使用者發現行程卡片顯示 Google Maps 但表單沒有可輸入的地方，選擇新增欄位讓它能實際使用

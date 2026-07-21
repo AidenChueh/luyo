@@ -15,17 +15,18 @@ export default function ItinSheet() {
   const [loc, setLoc] = useState('')
   const [note, setNote] = useState('')
   const [est, setEst] = useState('')
+  const [maps, setMaps] = useState('')
 
   useEffect(() => {
     if (!open) return
     const it = editId ? (getItinerary(tripId)[day] || []).find((x) => x.id === editId) : null
     if (it) {
       setTitle(it.title); setCat(it.cat); setStart(it.start); setEnd(it.end)
-      setLoc(it.loc || ''); setNote(it.note || ''); setEst(String(it.est || ''))
+      setLoc(it.loc || ''); setNote(it.note || ''); setEst(String(it.est || '')); setMaps(it.maps || '')
     } else {
       setTitle(prefill?.title || ''); setCat(prefill?.cat || 'sight')
       setStart('09:00'); setEnd('10:00')
-      setLoc(prefill?.loc || ''); setNote(prefill?.note || ''); setEst('')
+      setLoc(prefill?.loc || ''); setNote(prefill?.note || ''); setEst(''); setMaps('')
     }
   }, [open, editId, day, tripId])
 
@@ -34,7 +35,7 @@ export default function ItinSheet() {
   const valid = title.trim() && start && end
   const submit = () => {
     if (!valid) return
-    const fields = { title: title.trim(), cat, start, end, loc: loc.trim(), note: note.trim(), est: Number(est) || 0 }
+    const fields = { title: title.trim(), cat, start, end, loc: loc.trim(), note: note.trim(), est: Number(est) || 0, maps: maps.trim() }
     if (editId) editItin(tripId, day, editId, fields)
     else addItin(tripId, day, { ...fields, act: 0, rating: 0 })
     closeItin()
@@ -96,6 +97,11 @@ export default function ItinSheet() {
         <div className="field">
           <label>預估花費</label>
           <input type="text" inputMode="decimal" value={est} onChange={(e) => setEst(decimalInput(e.target.value))} placeholder="0" />
+        </div>
+
+        <div className="field">
+          <label>Google Maps 連結（可留空）</label>
+          <input type="text" inputMode="url" value={maps} onChange={(e) => setMaps(e.target.value)} placeholder="https://maps.google.com/..." />
         </div>
 
         <button className="btn btn-primary btn-block" style={{ marginTop: 18, opacity: valid ? 1 : 0.5 }} onClick={submit} disabled={!valid}>

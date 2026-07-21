@@ -241,9 +241,18 @@ export default function ItineraryScreen() {
                         <div className="conflict"><Icon name="alert" size={14} /> 時間與其他行程重疊，建議調整</div>
                       )}
                       <div className="foot">
-                        <span className="row" style={{ gap: 5, color: 'var(--primary)', fontSize: 12.5, fontWeight: 700 }}>
-                          <Icon name="mapPin" size={14} /> Google Maps
-                        </span>
+                        {it.maps ? (
+                          <a
+                            href={it.maps}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="row"
+                            style={{ gap: 5, color: 'var(--primary)', fontSize: 12.5, fontWeight: 700 }}
+                          >
+                            <Icon name="mapPin" size={14} /> Google Maps
+                          </a>
+                        ) : <span />}
                         <span className="cost">{it.act ? money(it.act, '') : it.est ? `預估 ${money(it.est, '')}` : '—'}</span>
                       </div>
                     </div>
