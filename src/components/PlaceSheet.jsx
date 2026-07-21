@@ -3,9 +3,10 @@ import Icon from './Icon'
 import { useStore } from '../store'
 import { PLACE_TYPE, PLACE_TAG } from '../data/seed'
 import { pickImage } from '../lib/image'
+import { geocode } from '../lib/geocode'
 
 export default function PlaceSheet() {
-  const { placeSheet, closePlace, getPlaces, addPlace, editPlace, removePlace } = useStore()
+  const { placeSheet, closePlace, getPlaces, addPlace, editPlace, removePlace, getTrip } = useStore()
   const { open, tripId, editId } = placeSheet
 
   const [name, setName] = useState('')
@@ -15,23 +16,46 @@ export default function PlaceSheet() {
   const [note, setNote] = useState('')
   const [maps, setMaps] = useState('')
   const [photo, setPhoto] = useState('')
+  const [coord, setCoord] = useState(null)
+  const [locating, setLocating] = useState(false)
+  const [locErr, setLocErr] = useState('')
 
   useEffect(() => {
     if (!open) return
     const p = editId ? getPlaces(tripId).find((x) => x.id === editId) : null
     if (p) {
       setName(p.name); setType(p.type); setTag(p.tag); setRating(p.rating || 0); setNote(p.note || ''); setMaps(p.maps || ''); setPhoto(p.photo || '')
+      setCoord(p.lat != null && p.lng != null ? { lat: p.lat, lng: p.lng } : null)
     } else {
       setName(''); setType('sight'); setTag('must'); setRating(0); setNote(''); setMaps(''); setPhoto('')
+      setCoord(null)
     }
+    setLocErr(''); setLocating(false)
   }, [open, editId, tripId])
 
   if (!open) return null
 
+  const trip = getTrip(tripId)
+  const locate = async () => {
+    if (!name.trim()) return
+    setLocating(true); setLocErr('')
+    try {
+      // 補上國家/城市增加命中率（例如「清水寺」單獨查會有多個結果）
+      const hint = [trip?.city, trip?.country].filter((s) => s && s !== '—').join(' ')
+      const hit = (await geocode(`${name.trim()} ${hint}`.trim())) || (await geocode(name.trim()))
+      if (hit) setCoord({ lat: hit.lat, lng: hit.lng })
+      else setLocErr('找不到這個地點，可換更完整的名稱再試')
+    } catch (err) {
+      setLocErr(err.message || '定位失敗')
+    } finally {
+      setLocating(false)
+    }
+  }
+
   const valid = name.trim()
   const submit = () => {
     if (!valid) return
-    const fields = { name: name.trim(), type, tag, rating, note: note.trim(), maps: maps.trim(), photo }
+    const fields = { name: name.trim(), type, tag, rating, note: note.trim(), maps: maps.trim(), photo, lat: coord?.lat, lng: coord?.lng }
     if (editId) editPlace(tripId, editId, fields)
     else addPlace(tripId, fields)
     closePlace()
@@ -90,6 +114,22 @@ export default function PlaceSheet() {
         <div className="field">
           <label>備註</label>
           <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="（可留空）" />
+        </div>
+
+        <div className="field">
+          <label>地圖定位</label>
+          <div className="row" style={{ gap: 10 }}>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={locate} disabled={!valid || locating}>
+              <Icon name={locating ? 'clock' : 'mapPin'} size={17} /> {locating ? '定位中…' : coord ? '重新定位' : '依名稱定位'}
+            </button>
+          </div>
+          {coord && (
+            <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+              <Icon name="check" size={12} /> 已定位 {coord.lat.toFixed(4)}, {coord.lng.toFixed(4)}
+            </div>
+          )}
+          {locErr && <div style={{ color: 'var(--danger)', fontSize: 12.5, marginTop: 6 }}>{locErr}</div>}
+          {!coord && !locErr && <div className="muted" style={{ fontSize: 12, marginTop: 6 }}>定位後才會顯示在地圖上</div>}
         </div>
 
         <div className="field">

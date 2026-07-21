@@ -251,14 +251,14 @@ export const PLACE_TO_ITIN = { sight: 'sight', food: 'food', cafe: 'food', mall:
 
 export const places = {
   kyoto: [
-    { id: 'pl1', type: 'sight', tag: 'done', name: '清水寺', rating: 5, note: '二年坂、三年坂一路逛上去', maps: 'https://maps.google.com/?q=清水寺' },
-    { id: 'pl2', type: 'sight', tag: 'must', name: '伏見稻荷大社', rating: 5, note: '千本鳥居建議早上去人少', maps: 'https://maps.google.com/?q=伏見稻荷大社' },
-    { id: 'pl3', type: 'sight', tag: 'must', name: '嵐山竹林', rating: 5, note: '渡月橋一起排', maps: '' },
-    { id: 'pl4', type: 'food', tag: 'done', name: '祇園 山乃尾', rating: 5, note: '京町家割烹，已訂位', maps: '' },
-    { id: 'pl5', type: 'food', tag: 'must', name: 'うなぎ きんぶん', rating: 4, note: '伏見稻荷附近鰻魚飯', maps: '' },
-    { id: 'pl6', type: 'cafe', tag: 'must', name: '% Arabica 嵐山', rating: 4, note: '河畔座位，會排隊', maps: '' },
-    { id: 'pl7', type: 'mall', tag: 'done', name: '錦市場', rating: 4, note: '伴手禮、漬物、玉子燒', maps: '' },
-    { id: 'pl8', type: 'mall', tag: 'must', name: '心齋橋筋', rating: 4, note: '藥妝、最後採買', maps: '' },
+    { id: 'pl1', type: 'sight', tag: 'done', name: '清水寺', rating: 5, note: '二年坂、三年坂一路逛上去', maps: 'https://maps.google.com/?q=清水寺', lat: 34.9949, lng: 135.7850 },
+    { id: 'pl2', type: 'sight', tag: 'must', name: '伏見稻荷大社', rating: 5, note: '千本鳥居建議早上去人少', maps: 'https://maps.google.com/?q=伏見稻荷大社', lat: 34.9671, lng: 135.7727 },
+    { id: 'pl3', type: 'sight', tag: 'must', name: '嵐山竹林', rating: 5, note: '渡月橋一起排', maps: '', lat: 35.0170, lng: 135.6716 },
+    { id: 'pl4', type: 'food', tag: 'done', name: '祇園 山乃尾', rating: 5, note: '京町家割烹，已訂位', maps: '', lat: 35.0037, lng: 135.7752 },
+    { id: 'pl5', type: 'food', tag: 'must', name: 'うなぎ きんぶん', rating: 4, note: '伏見稻荷附近鰻魚飯', maps: '', lat: 34.9690, lng: 135.7690 },
+    { id: 'pl6', type: 'cafe', tag: 'must', name: '% Arabica 嵐山', rating: 4, note: '河畔座位，會排隊', maps: '', lat: 35.0128, lng: 135.6753 },
+    { id: 'pl7', type: 'mall', tag: 'done', name: '錦市場', rating: 4, note: '伴手禮、漬物、玉子燒', maps: '', lat: 35.0050, lng: 135.7649 },
+    { id: 'pl8', type: 'mall', tag: 'must', name: '心齋橋筋', rating: 4, note: '藥妝、最後採買', maps: '', lat: 34.6723, lng: 135.5010 },
   ],
 }
 

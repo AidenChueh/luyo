@@ -24,18 +24,19 @@ const GRADIENTS = [
   'linear-gradient(150deg, #3E7C5A 0%, #C77B1E 65%, #D9A03A 100%)',
 ]
 
-const TODAY = '2026-06-14'
 const pad = (n) => String(n).padStart(2, '0')
+const ymd = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+const TODAY = ymd(new Date())
 const addDays = (s, n) => {
   const d = parseYMD(s); d.setDate(d.getDate() + n)
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  return ymd(d)
 }
-const diffDays = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000) + 1
+const diffDays = (a, b) => Math.round((parseYMD(b) - parseYMD(a)) / 86400000) + 1
 
 const statusOf = (start, end) => {
-  const today = new Date(TODAY)
-  if (new Date(end) < today) return 'completed'
-  if (new Date(start) <= today && today <= new Date(end)) return 'ongoing'
+  const today = parseYMD(TODAY)
+  if (parseYMD(end) < today) return 'completed'
+  if (parseYMD(start) <= today && today <= parseYMD(end)) return 'ongoing'
   return 'planning'
 }
 

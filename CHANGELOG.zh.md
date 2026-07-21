@@ -277,3 +277,17 @@
 - 範圍：src/styles/global.css
 - 做了什麼：全站關閉行動裝置的文字選取與藍色高亮。`html` 設 `-webkit-tap-highlight-color: transparent`（可繼承，全站生效）、`-webkit-touch-callout: none`（擋長按彈出選單）、`user-select: none`（擋長按反白與選取控制點）；`img` 加 `-webkit-user-drag: none` 擋拖曳殘影。再對 `input, textarea, select, [contenteditable="true"], .md, .selectable` 把 `user-select: text` 與 callout 開回來，確保輸入與日誌內文仍可選取複製。未動 pointer-events / touch-action，點擊與捲動行為不受影響。build 驗證通過
 - 為什麼：使用者回報全站長按/點擊會出現 iOS 藍色選取區塊與控制點
+
+## 2026-07-21 09:13（v1.13）
+- 範圍：src/lib/format.js、geocode.js（新增）、src/components/MapView.jsx（新增）、AddTripSheet.jsx、FlightSheet.jsx、StaySheet.jsx、PlaceSheet.jsx、src/screens/MapScreen.jsx、PrepScreen.jsx、ItineraryScreen.jsx、src/store.jsx、src/data/seed.js、src/styles/global.css、package.json
+- 做了什麼：八項修復與功能調整。
+  1. 倒數天數：根因是參考日期寫死 `TODAY = 2026-06-14`，實際日期已過該點故天數全部偏移。改為以裝置實際今天計算（正規化到當地午夜，並統一用 parseYMD 避免 UTC/當地混用差一天）；AddTripSheet 的 statusOf/currentDay 同步改用實際今天。種子旅程的 status 為展示資料仍寫死不動。
+  2. 待辦優先級：PrepScreen 新增待辦時可選高/中/低（原本一律寫死 'mid'）。
+  3. 機票與住宿價格同步記帳：FlightSheet 新增價格欄；store 加 syncLinkedExpense，以固定 linkId（`lnk-<來源id>`）對記帳做 upsert——新增/編輯機票或住宿時寫入對應支出（機票歸「機票」類、住宿歸「住宿」類），價格清為 0 或來源被刪除時一併移除。既有種子機票/住宿需重新儲存一次才會產生連動支出。
+  4. 清單新增框位置：PrepScreen 三個分頁的新增列（含打包分類、待辦優先級 chips）由頁面最底部移到進度條下方。
+  5. 購物新增列溢位：根因是 `.addbar input` 為 flex item 但未解除 `min-width: auto`，其固有寬度（約 170px+）加上數量/單價/按鈕的固定寬度超過容器，把「＋」按鈕擠出畫面。改為 `flex: 1 1 0; min-width: 0`，數量/單價改用 `flex: 0 0 52px/72px`，按鈕 `flex: 0 0 46px` 確保永不被壓縮。
+  6. 航班時間輸入格：根因是 `.field input` 樣式選擇器只涵蓋 text/date/password，`type="time"` 未被選中而沿用瀏覽器預設小尺寸。選擇器補上 time 並套用同一組 appearance reset 與 48px 高度。
+  7. 時間軸遮擋：根因是 `.tl-time` 佔 `left:-58px` 起算 48px（右緣 -10px），而 `.tl-dot` 位於 `-21px~-9px`，兩者水平區間重疊，靠右對齊的時間文字正好被圓點壓住。改為 CSS Grid 三欄 `50px / 16px / minmax(0,1fr)`（時間、圓點與線、卡片），線與圓點收進獨立的 `.tl-rail` 欄並設 `pointer-events: none`、線的 z-index 低於圓點，最後一項不畫線；≤360px 縮為 44px 欄寬。
+  8. 地圖改接真地圖：導入 Leaflet + OpenStreetMap 圖磚（免 API key），新增 MapView 元件支援拖曳、雙指縮放、雙擊放大、點標記顯示名稱與分類，並自動 fitBounds 到所有地點（單一地點則置中 zoom 15）。標記用 divIcon 自繪（預設 marker 圖檔路徑打包後會失效）。地點資料新增 lat/lng：種子 8 個地點直接填入真實座標；新增/編輯地點時可用「依名稱定位」透過 Nominatim 轉換座標（lib/geocode.js，帶城市/國家提示提高命中率）。Day 檢視以名稱對應地點庫取得座標並畫路線，距離改用 haversine 實算。未定位項目在清單標示「未定位」且不上圖；無可顯示標記時顯示空狀態。`.mapview` 設 `z-index: 0` 建立堆疊脈絡，避免 Leaflet 內部 z-index 疊到 nav/sheet 之上；深色模式對圖磚加 filter 調暗。
+  build 驗證通過
+- 為什麼：使用者提出七項修復需求，並在確認地圖方案後選擇 Leaflet + OpenStreetMap

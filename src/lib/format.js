@@ -14,11 +14,15 @@ export const dateRange = (start, end) => {
   return `${f(start)} – ${f(end)}`
 }
 
-const TODAY = new Date('2026-06-14')
+// 以裝置實際今天為準（正規化到當地午夜，與 parseYMD 同為當地時間避免時區差一天）
+export const startOfToday = () => {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d
+}
 
 export const countdown = (start) => {
-  const d = new Date(start)
-  const diff = Math.ceil((d - TODAY) / 86400000)
+  const diff = Math.round((parseYMD(start) - startOfToday()) / 86400000)
   if (diff > 0) return { type: 'before', text: `倒數 ${diff} 天` }
   if (diff === 0) return { type: 'today', text: '今天出發' }
   return { type: 'during', text: '旅程進行中' }

@@ -44,7 +44,7 @@ export default function StaySheet() {
           <div className="field" style={{ flex: 1 }}><label>入住</label><input type="date" value={v.checkin || ''} onChange={set('checkin')} /></div>
           <div className="field" style={{ flex: 1 }}><label>退房</label><input type="date" value={v.checkout || ''} onChange={set('checkout')} /></div>
         </div>
-        <div className="field"><label>價格</label><input type="text" inputMode="numeric" value={v.price ?? ''} onChange={(e) => setV((p) => ({ ...p, price: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="0" /></div>
+        <div className="field"><label>價格（會同步到記帳）</label><input type="text" inputMode="numeric" value={v.price ?? ''} onChange={(e) => setV((p) => ({ ...p, price: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="0" /></div>
         <div className="field"><label>官網連結</label><input type="text" value={v.url || ''} onChange={set('url')} placeholder="https://..." /></div>
 
         <button className="btn btn-primary btn-block" style={{ marginTop: 16, opacity: valid ? 1 : 0.5 }} onClick={submit} disabled={!valid}>

@@ -44,6 +44,7 @@ export default function PrepScreen() {
   const [tab, setTab] = useState('todo')
   const [draft, setDraft] = useState('')
   const [packCat, setPackCat] = useState('documents')
+  const [priority, setPriority] = useState('mid')
   const [qty, setQty] = useState('1')
   const [price, setPrice] = useState('')
 
@@ -83,7 +84,7 @@ export default function PrepScreen() {
       addPrep(id, 'packing', { cat: packCat, text })
     } else {
       if (!text) return
-      addPrep(id, 'todo', { text, priority: 'mid', due: '' })
+      addPrep(id, 'todo', { text, priority, due: '' })
     }
     setDraft('')
   }
@@ -110,6 +111,39 @@ export default function PrepScreen() {
 
       <div className="pad section" style={{ marginTop: 16 }}>
         <Progress list={prep[tab]} />
+
+        {/* 新增列（進度條下方） */}
+        {tab === 'packing' && (
+          <div className="chips" style={{ marginTop: 14 }}>
+            {Object.entries(PACK_CATS).map(([ck, c]) => (
+              <button key={ck} className={`chip ${packCat === ck ? 'active' : ''}`} onClick={() => setPackCat(ck)}>{c.label}</button>
+            ))}
+          </div>
+        )}
+        {tab === 'todo' && (
+          <div className="chips" style={{ marginTop: 14 }}>
+            {Object.entries(PREP_PRIORITY).map(([pk2, pr]) => (
+              <button key={pk2} className={`chip ${priority === pk2 ? 'active' : ''}`} onClick={() => setPriority(pk2)}>
+                <span style={{ color: priority === pk2 ? 'inherit' : pr.color }}>●</span> {pr.label}優先
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="addbar" style={{ marginTop: 12 }}>
+          <input
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && submit()}
+            placeholder={tab === 'shopping' ? '想買的品項' : tab === 'packing' ? `新增到「${PACK_CATS[packCat].label}」` : '新增待辦'}
+          />
+          {tab === 'shopping' && (
+            <>
+              <input className="addbar-num" value={qty} onChange={(e) => setQty(e.target.value.replace(/[^0-9]/g, ''))} placeholder="數" aria-label="數量" />
+              <input className="addbar-num addbar-price" value={price} onChange={(e) => setPrice(e.target.value.replace(/[^0-9]/g, ''))} placeholder="單價" aria-label="單價" />
+            </>
+          )}
+          <button className="add-btn" onClick={submit} disabled={!draft.trim()} aria-label="新增"><Icon name="plus" size={22} /></button>
+        </div>
 
         {/* 待辦 */}
         {tab === 'todo' && (
@@ -179,29 +213,6 @@ export default function PrepScreen() {
           </div>
         )}
 
-        {/* 新增列 */}
-        {tab === 'packing' && (
-          <div className="chips" style={{ marginTop: 16 }}>
-            {Object.entries(PACK_CATS).map(([ck, c]) => (
-              <button key={ck} className={`chip ${packCat === ck ? 'active' : ''}`} onClick={() => setPackCat(ck)}>{c.label}</button>
-            ))}
-          </div>
-        )}
-        <div className="addbar">
-          <input
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && submit()}
-            placeholder={tab === 'shopping' ? '想買的品項' : tab === 'packing' ? `新增到「${PACK_CATS[packCat].label}」` : '新增待辦'}
-          />
-          {tab === 'shopping' && (
-            <>
-              <input style={{ width: 52, flex: 'none', textAlign: 'center' }} value={qty} onChange={(e) => setQty(e.target.value.replace(/[^0-9]/g, ''))} placeholder="數" />
-              <input style={{ width: 76, flex: 'none' }} value={price} onChange={(e) => setPrice(e.target.value.replace(/[^0-9]/g, ''))} placeholder="單價" />
-            </>
-          )}
-          <button className="add-btn" onClick={submit} disabled={!draft.trim()} aria-label="新增"><Icon name="plus" size={22} /></button>
-        </div>
       </div>
     </div>
   )

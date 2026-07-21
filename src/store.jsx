@@ -153,6 +153,20 @@ export function StoreProvider({ children }) {
   const removeExpense = (tripId, id) =>
     setByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((e) => e.id !== id) }))
 
+  // 機票/住宿等來源的連動支出：以固定 linkId 做 upsert，價格為 0 或來源刪除時一併移除
+  const baseList = (tripId) => {
+    const t = getTrip(tripId)
+    return t?.spent ? [{ id: 'base', date: t.start, cat: 'other', title: '既有支出', amt: t.spent, loc: '前置紀錄' }] : []
+  }
+  const syncLinkedExpense = (tripId, linkId, data) => {
+    setByTrip((prev) => {
+      const list = prev[tripId] || baseList(tripId)
+      const rest = list.filter((e) => e.id !== linkId)
+      if (!data || !data.amt) return { ...prev, [tripId]: rest }
+      return { ...prev, [tripId]: [...rest, { id: linkId, ...data }] }
+    })
+  }
+
   const getExpenses = (tripId) => byTrip[tripId] || null
   const getSpent = (trip) => {
     const list = byTrip[trip.id]
@@ -231,24 +245,47 @@ export function StoreProvider({ children }) {
     setJournalByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((e) => e.id !== entryId) }))
 
   // ---- 機票 ----
+  const flightExpense = (f) => ({
+    date: f.date || getTrip(f.tripId)?.start, cat: 'flight',
+    title: `${f.airline || '機票'} ${f.no || ''}`.trim(),
+    amt: Number(f.price) || 0, loc: [f.depAp, f.arrAp].filter(Boolean).join(' → ') || '機票',
+  })
   const getFlights = (tripId) => flightByTrip[tripId] || []
-  const addFlight = (tripId, f) =>
-    setFlightByTrip((prev) => ({ ...prev, [tripId]: [...(prev[tripId] || []), { id: uid('f'), ...f }] }))
-  const editFlight = (tripId, fid, patch) =>
+  const addFlight = (tripId, f) => {
+    const id = uid('f')
+    setFlightByTrip((prev) => ({ ...prev, [tripId]: [...(prev[tripId] || []), { id, ...f }] }))
+    syncLinkedExpense(tripId, `lnk-${id}`, flightExpense({ ...f, tripId }))
+  }
+  const editFlight = (tripId, fid, patch) => {
     setFlightByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).map((f) => (f.id === fid ? { ...f, ...patch } : f)) }))
-  const removeFlight = (tripId, fid) =>
+    syncLinkedExpense(tripId, `lnk-${fid}`, flightExpense({ ...patch, tripId }))
+  }
+  const removeFlight = (tripId, fid) => {
     setFlightByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((f) => f.id !== fid) }))
+    syncLinkedExpense(tripId, `lnk-${fid}`, null)
+  }
   const reorderFlights = (tripId, items) =>
     setFlightByTrip((prev) => ({ ...prev, [tripId]: items }))
 
   // ---- 住宿 ----
+  const stayExpense = (s) => ({
+    date: s.checkin || getTrip(s.tripId)?.start, cat: 'hotel',
+    title: s.name || '住宿', amt: Number(s.price) || 0, loc: s.address || '住宿',
+  })
   const getStays = (tripId) => stayByTrip[tripId] || []
-  const addStay = (tripId, s) =>
-    setStayByTrip((prev) => ({ ...prev, [tripId]: [...(prev[tripId] || []), { id: uid('h'), ...s }] }))
-  const editStay = (tripId, sid, patch) =>
+  const addStay = (tripId, s) => {
+    const id = uid('h')
+    setStayByTrip((prev) => ({ ...prev, [tripId]: [...(prev[tripId] || []), { id, ...s }] }))
+    syncLinkedExpense(tripId, `lnk-${id}`, stayExpense({ ...s, tripId }))
+  }
+  const editStay = (tripId, sid, patch) => {
     setStayByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).map((s) => (s.id === sid ? { ...s, ...patch } : s)) }))
-  const removeStay = (tripId, sid) =>
+    syncLinkedExpense(tripId, `lnk-${sid}`, stayExpense({ ...patch, tripId }))
+  }
+  const removeStay = (tripId, sid) => {
     setStayByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((s) => s.id !== sid) }))
+    syncLinkedExpense(tripId, `lnk-${sid}`, null)
+  }
 
   // ---- 相簿 ----
   const getPhotos = (tripId) => photoByTrip[tripId] || []

@@ -10,7 +10,7 @@ export default function FlightSheet() {
   useEffect(() => {
     if (!open) return
     const f = editId ? getFlights(tripId).find((x) => x.id === editId) : null
-    setV(f || { dir: 'outbound', airline: '', no: '', date: '', dep: '', depAp: '', arr: '', arrAp: '', terminal: '', seat: '', baggage: '' })
+    setV(f || { dir: 'outbound', airline: '', no: '', date: '', dep: '', depAp: '', arr: '', arrAp: '', terminal: '', seat: '', baggage: '', price: '' })
   }, [open, editId, tripId])
 
   if (!open) return null
@@ -60,6 +60,7 @@ export default function FlightSheet() {
           <div className="field" style={{ flex: 1 }}><label>座位</label><input type="text" value={v.seat || ''} onChange={set('seat')} placeholder="34A / 34B" /></div>
         </div>
         <div className="field"><label>行李額度</label><input type="text" value={v.baggage || ''} onChange={set('baggage')} placeholder="23kg × 2" /></div>
+        <div className="field"><label>價格（會同步到記帳）</label><input type="text" inputMode="numeric" value={v.price ?? ''} onChange={(e) => setV((p) => ({ ...p, price: e.target.value.replace(/[^0-9]/g, '') }))} placeholder="0" /></div>
 
         <button className="btn btn-primary btn-block" style={{ marginTop: 16, opacity: valid ? 1 : 0.5 }} onClick={submit} disabled={!valid}>
           <Icon name="check" size={19} /> {editId ? '儲存變更' : '新增航班'}

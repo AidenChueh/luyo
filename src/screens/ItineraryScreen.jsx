@@ -219,8 +219,10 @@ export default function ItineraryScreen() {
                 <div key={it.id}>
                   <div className="tl-item fade-up" style={{ animationDelay: `${idx * 0.04}s` }}>
                     <div className="tl-time">{it.start}<small>{it.end}</small></div>
-                    {idx < items.length - 1 && <div className="tl-line" />}
-                    <div className="tl-dot" style={{ background: c.color }} />
+                    <div className="tl-rail">
+                      <span className="tl-dot" style={{ background: c.color }} />
+                      {idx < items.length - 1 && <span className="tl-line" />}
+                    </div>
                     <div className="tl-card" style={{ borderLeftColor: c.color }} onClick={() => openItin(id, day, it.id)}>
                       <div className="between">
                         <span className="tag" style={{ background: `color-mix(in srgb, ${c.color} 10%, transparent)`, color: c.color }}>
