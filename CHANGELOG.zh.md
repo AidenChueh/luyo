@@ -296,3 +296,8 @@
 - 範圍：src/lib/ai.js、src/lib/image.js、src/components/FlightSheet.jsx
 - 做了什麼：新增「上傳機票截圖自動帶入欄位」。ai.js 加 extractFlightsFromImage：以 Claude 視覺辨識截圖，改用 structured outputs（`output_config.format` + JSON schema）由 API 保證回傳格式，不再像既有 AI 行程規劃那樣從自由文字撈 `[`…`]`；開啟 adaptive thinking 提高辨識準確度；回傳結果再做一次清洗（日期/時間格式驗證、價格只留數字、dir 收斂為 outbound/return），欄位辨識不到一律留空不猜。轉機行程由 prompt 要求拆成多段並依搭乘順序排列。FlightSheet 頂端加上傳按鈕：單段直接填入表單供核對後儲存；多段顯示分段清單，可點單段載入表單，或按「建立 N 張機票卡片」一次全建（走既有 addFlight，價格會連動寫入記帳）。無 API key 時顯示提示並中止，不呼叫 API 也不產生假資料。截圖以長邊 1600px 壓縮後僅在記憶體中傳送，不寫入 localStorage。image.js 的 pickImage 補 onError 回呼，避免圖片解碼失敗時靜默無反應。build 驗證通過，並比對安裝的 @anthropic-ai/sdk 0.104.2 型別確認 output_config/json_schema 形狀相符
 - 為什麼：使用者要求上傳機票截圖自動帶入各欄位，且轉機需獨立成不同機票卡片；經確認採「無 key 時提示設定」與「帶入表單先確認」兩項設計
+
+## 2026-07-21 09:45（v1.15）
+- 範圍：src/components/FlightSheet.jsx
+- 做了什麼：關閉 v1.14 的機票截圖辨識入口。比照 AI 行程規劃的做法，只把 FlightSheet 內的上傳 UI 區塊註解掉；scan/createAll 等處理函式與 lib/ai.js 的 extractFlightsFromImage 完整保留，之後要開啟把註解拿掉即可。已確認該段文字不再出現在打包結果中。build 驗證通過
+- 為什麼：該功能需要 Console 的 API 額度（與 Claude Pro 訂閱分開計費），使用者決定先不啟用

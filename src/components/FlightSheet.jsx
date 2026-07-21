@@ -66,6 +66,8 @@ export default function FlightSheet() {
           <span style={{ width: 40 }} />
         </div>
 
+        {/* 機票截圖辨識暫時關閉（需另外付費的 API 額度）。scan/createAll 與 lib/ai.js 的
+            extractFlightsFromImage 都保留，要開啟時把這段註解拿掉即可。
         <div className="field" style={{ marginTop: 16 }}>
           <label>從截圖自動帶入</label>
           <button className="btn btn-ghost btn-block" onClick={scan} disabled={scanning}>
@@ -106,6 +108,7 @@ export default function FlightSheet() {
             </div>
           )}
         </div>
+        */}
 
         <div className="field">
           <label>去程 / 回程</label>
