@@ -291,3 +291,8 @@
   8. 地圖改接真地圖：導入 Leaflet + OpenStreetMap 圖磚（免 API key），新增 MapView 元件支援拖曳、雙指縮放、雙擊放大、點標記顯示名稱與分類，並自動 fitBounds 到所有地點（單一地點則置中 zoom 15）。標記用 divIcon 自繪（預設 marker 圖檔路徑打包後會失效）。地點資料新增 lat/lng：種子 8 個地點直接填入真實座標；新增/編輯地點時可用「依名稱定位」透過 Nominatim 轉換座標（lib/geocode.js，帶城市/國家提示提高命中率）。Day 檢視以名稱對應地點庫取得座標並畫路線，距離改用 haversine 實算。未定位項目在清單標示「未定位」且不上圖；無可顯示標記時顯示空狀態。`.mapview` 設 `z-index: 0` 建立堆疊脈絡，避免 Leaflet 內部 z-index 疊到 nav/sheet 之上；深色模式對圖磚加 filter 調暗。
   build 驗證通過
 - 為什麼：使用者提出七項修復需求，並在確認地圖方案後選擇 Leaflet + OpenStreetMap
+
+## 2026-07-21 09:28（v1.14）
+- 範圍：src/lib/ai.js、src/lib/image.js、src/components/FlightSheet.jsx
+- 做了什麼：新增「上傳機票截圖自動帶入欄位」。ai.js 加 extractFlightsFromImage：以 Claude 視覺辨識截圖，改用 structured outputs（`output_config.format` + JSON schema）由 API 保證回傳格式，不再像既有 AI 行程規劃那樣從自由文字撈 `[`…`]`；開啟 adaptive thinking 提高辨識準確度；回傳結果再做一次清洗（日期/時間格式驗證、價格只留數字、dir 收斂為 outbound/return），欄位辨識不到一律留空不猜。轉機行程由 prompt 要求拆成多段並依搭乘順序排列。FlightSheet 頂端加上傳按鈕：單段直接填入表單供核對後儲存；多段顯示分段清單，可點單段載入表單，或按「建立 N 張機票卡片」一次全建（走既有 addFlight，價格會連動寫入記帳）。無 API key 時顯示提示並中止，不呼叫 API 也不產生假資料。截圖以長邊 1600px 壓縮後僅在記憶體中傳送，不寫入 localStorage。image.js 的 pickImage 補 onError 回呼，避免圖片解碼失敗時靜默無反應。build 驗證通過，並比對安裝的 @anthropic-ai/sdk 0.104.2 型別確認 output_config/json_schema 形狀相符
+- 為什麼：使用者要求上傳機票截圖自動帶入各欄位，且轉機需獨立成不同機票卡片；經確認採「無 key 時提示設定」與「帶入表單先確認」兩項設計

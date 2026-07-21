@@ -195,6 +195,107 @@ async function generatePlanWithClaude(trip, places, itinSummary, { onDelta } = {
   }
 }
 
+// ---- 機票截圖辨識 ----
+
+class FlightScanError extends Error {}
+
+const FLIGHT_FIELDS = ['dir', 'airline', 'no', 'date', 'dep', 'depAp', 'arr', 'arrAp', 'terminal', 'seat', 'baggage', 'price']
+
+// structured outputs：由 API 保證回傳格式，不必從自由文字裡撈 JSON
+const FLIGHT_SCHEMA = {
+  type: 'object',
+  properties: {
+    legs: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          dir: { type: 'string', enum: ['outbound', 'return'] },
+          airline: { type: 'string' },
+          no: { type: 'string' },
+          date: { type: 'string' },
+          dep: { type: 'string' },
+          depAp: { type: 'string' },
+          arr: { type: 'string' },
+          arrAp: { type: 'string' },
+          terminal: { type: 'string' },
+          seat: { type: 'string' },
+          baggage: { type: 'string' },
+          price: { type: 'string' },
+        },
+        required: FLIGHT_FIELDS,
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['legs'],
+  additionalProperties: false,
+}
+
+const FLIGHT_SYSTEM = `你是機票資訊辨識助手，從使用者提供的機票、電子票券或登機證截圖中擷取航班資訊。
+規則：
+- 轉機行程必須拆成多段，每一段航班各自一個物件，依實際搭乘順序排列。
+- date 用 YYYY-MM-DD；dep、arr 用 24 小時制 HH:MM。
+- depAp、arrAp 格式為「機場代碼 名稱」，例如「TPE 桃園」；只看得到代碼就只填代碼。
+- price 只填阿拉伯數字，不含貨幣符號與千分位；看不到票價就填空字串。
+- dir：回程／返程航班填 return，其餘填 outbound。
+- 任何看不到或不確定的欄位一律填空字串。絕對不要猜測、不要自行補上截圖中沒有的資訊。`
+
+const parseDataUrl = (dataUrl) => {
+  const m = /^data:(image\/(?:jpeg|png|gif|webp));base64,(.+)$/i.exec(String(dataUrl || ''))
+  return m ? { mediaType: m[1].toLowerCase(), data: m[2] } : null
+}
+
+const cleanLeg = (raw) => {
+  const s = (k) => String(raw?.[k] ?? '').trim()
+  const leg = {}
+  for (const k of FLIGHT_FIELDS) leg[k] = s(k)
+  leg.dir = leg.dir === 'return' ? 'return' : 'outbound'
+  leg.price = leg.price.replace(/[^0-9]/g, '')
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(leg.date)) leg.date = ''
+  if (!/^\d{2}:\d{2}$/.test(leg.dep)) leg.dep = ''
+  if (!/^\d{2}:\d{2}$/.test(leg.arr)) leg.arr = ''
+  return leg
+}
+
+export async function extractFlightsFromImage(dataUrl) {
+  if (!hasApiKey()) throw new FlightScanError('請先到「我的」頁面設定 API key，才能辨識機票截圖。')
+  const img = parseDataUrl(dataUrl)
+  if (!img) throw new FlightScanError('這個圖片格式不支援，請改用 JPG 或 PNG。')
+
+  const client = new Anthropic({ apiKey: getApiKey(), dangerouslyAllowBrowser: true })
+  try {
+    const res = await client.messages.create({
+      model: 'claude-opus-4-8',
+      max_tokens: 8192,
+      thinking: { type: 'adaptive' },
+      system: FLIGHT_SYSTEM,
+      output_config: { format: { type: 'json_schema', schema: FLIGHT_SCHEMA } },
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: img.mediaType, data: img.data } },
+          { type: 'text', text: '請擷取這張截圖裡的航班資訊。' },
+        ],
+      }],
+    })
+    if (res.stop_reason === 'refusal') throw new FlightScanError('無法處理這張圖片，請換一張再試。')
+    const text = res.content.filter((b) => b.type === 'text').map((b) => b.text).join('')
+    let parsed
+    try { parsed = JSON.parse(text) } catch { throw new FlightScanError('辨識結果解析失敗，請重試。') }
+    const legs = (Array.isArray(parsed?.legs) ? parsed.legs : [])
+      .map(cleanLeg)
+      .filter((l) => l.airline || l.no || l.depAp || l.arrAp)
+    if (!legs.length) throw new FlightScanError('無法從這張圖辨識出航班資訊，請換一張更清楚的截圖。')
+    return legs
+  } catch (err) {
+    if (err instanceof FlightScanError) throw err
+    if (err instanceof Anthropic.AuthenticationError) throw new Error('API key 無效，請到「我的」頁面檢查設定。')
+    if (err instanceof Anthropic.RateLimitError) throw new Error('呼叫太頻繁，請稍後再試。')
+    throw new Error('辨識失敗，請稍後再試。')
+  }
+}
+
 // ---- AI 預算分析 ----
 
 const BUDGET_SYSTEM = '你是旅遊預算分析助手。用繁體中文寫 3 到 5 句分析文字，依序涵蓋：花費最高的分類、以目前日均花費推算到旅程結束是否會超支、達 50%／85%／100% 預算級距的風險提醒、以及 1 到 2 條具體建議。只根據我提供的數字分析，不要杜撰沒有的資訊，不要用 emoji，不要加標題或前言，直接輸出文案。'
