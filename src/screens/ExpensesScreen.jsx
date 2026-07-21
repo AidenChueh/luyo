@@ -124,6 +124,8 @@ export default function ExpensesScreen() {
 
   const budgetPct = pct(total, trip.budget)
   const budgetColor = budgetPct >= 85 ? 'var(--danger)' : budgetPct >= 50 ? 'var(--amber)' : 'var(--accent)'
+  // 幣別統一標在預算進度旁，個別金額不再重複前綴
+  const n = (v) => money(v, '')
 
   return (
     <>
@@ -142,20 +144,23 @@ export default function ExpensesScreen() {
       <div className="pad section" style={{ marginTop: 6 }}>
         <div className="card" style={{ padding: 16 }}>
           <div className="between">
-            <div className="section-title" style={{ fontSize: 16 }}>預算進度</div>
+            <div className="row" style={{ gap: 8 }}>
+              <div className="section-title" style={{ fontSize: 16 }}>預算進度</div>
+              <span className="tag" style={{ background: 'var(--sand)', color: 'var(--ink-2)' }}>{trip.sym} {trip.currency}</span>
+            </div>
             <button className="row" style={{ gap: 4, color: 'var(--primary)', fontSize: 13, fontWeight: 700 }} onClick={() => nav(`/trip/${trip.id}/budget`)}>
               詳情 <Icon name="chevronRight" size={15} />
             </button>
           </div>
           <div className="row" style={{ alignItems: 'baseline', gap: 8, margin: '12px 0 10px' }}>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 600 }}>{money(total, trip.sym)}</span>
-            <span className="muted" style={{ fontWeight: 600 }}>/ {money(trip.budget, trip.sym)}</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 600 }}>{n(total)}</span>
+            <span className="muted" style={{ fontWeight: 600 }}>/ {n(trip.budget)}</span>
             <span style={{ marginLeft: 'auto', fontWeight: 700, color: budgetColor }}>{budgetPct}%</span>
           </div>
           <div className="track"><i style={{ width: `${Math.min(100, budgetPct)}%`, background: budgetColor }} /></div>
           <div className="between" style={{ marginTop: 8, fontSize: 12.5, fontWeight: 600 }}>
-            <span className="muted">每日平均 {money(dailyAvg, trip.sym)}</span>
-            <span style={{ color: 'var(--accent)' }}>剩餘 {money(remaining, trip.sym)}</span>
+            <span className="muted">每日平均 {n(dailyAvg)}</span>
+            <span style={{ color: 'var(--accent)' }}>剩餘 {n(remaining)}</span>
           </div>
         </div>
       </div>
@@ -163,10 +168,10 @@ export default function ExpensesScreen() {
       {/* Stat grid */}
       <div className="pad section">
         <div className="stat-grid">
-          <div className="stat"><div className="k"><Icon name="wallet" size={14} /> 總支出</div><div className="v">{money(total, trip.sym)}</div><div className="s">{trip.currency !== HOME ? `≈ NT$${Math.round(toHome(total, trip.currency)).toLocaleString()}` : `${list.length} 筆紀錄`}</div></div>
-          <div className="stat"><div className="k"><Icon name="calendar" size={14} /> 每日平均</div><div className="v">{money(dailyAvg, trip.sym)}</div><div className="s">第 {trip.currentDay || trip.days} 天</div></div>
-          <div className="stat"><div className="k"><Icon name="users" size={14} /> 每人平均</div><div className="v">{money(perPerson, trip.sym)}</div><div className="s">{trip.companions} 人分攤</div></div>
-          <div className="stat"><div className="k"><Icon name="chart" size={14} /> 剩餘預算</div><div className="v" style={{ color: 'var(--accent)' }}>{money(remaining, trip.sym)}</div><div className="s">總 {money(trip.budget, trip.sym)}</div></div>
+          <div className="stat"><div className="k"><Icon name="wallet" size={14} /> 總支出</div><div className="v">{n(total)}</div><div className="s">{trip.currency !== HOME ? `≈ NT$${Math.round(toHome(total, trip.currency)).toLocaleString()}` : `${list.length} 筆紀錄`}</div></div>
+          <div className="stat"><div className="k"><Icon name="calendar" size={14} /> 每日平均</div><div className="v">{n(dailyAvg)}</div><div className="s">第 {trip.currentDay || trip.days} 天</div></div>
+          <div className="stat"><div className="k"><Icon name="users" size={14} /> 每人平均</div><div className="v">{n(perPerson)}</div><div className="s">{trip.companions} 人分攤</div></div>
+          <div className="stat"><div className="k"><Icon name="chart" size={14} /> 剩餘預算</div><div className="v" style={{ color: 'var(--accent)' }}>{n(remaining)}</div><div className="s">總 {n(trip.budget)}</div></div>
         </div>
       </div>
 
@@ -181,7 +186,7 @@ export default function ExpensesScreen() {
 
           {tab === 'pie' && (
             <div className="row" style={{ gap: 16, alignItems: 'center' }}>
-              <Donut slices={byCat} total={total} sym={trip.sym} />
+              <Donut slices={byCat} total={total} sym="" />
               <ul className="legend" style={{ gridTemplateColumns: '1fr', flex: 1 }}>
                 {byCat.map((s) => (
                   <li key={s.key}>
@@ -198,7 +203,7 @@ export default function ExpensesScreen() {
             <div className="bars">
               {onTripDays.map(([d, v]) => (
                 <div className="col" key={d}>
-                  <div className="bm" style={{ height: `${(v / maxDay) * 100}%` }} title={money(v, trip.sym)} />
+                  <div className="bm" style={{ height: `${(v / maxDay) * 100}%` }} title={n(v)} />
                   <div className="bl">{parseYMD(d).getMonth() + 1}/{parseYMD(d).getDate()}</div>
                 </div>
               ))}
@@ -245,7 +250,7 @@ export default function ExpensesScreen() {
                   <div className="t">{e.title}</div>
                   <div className="s">{c.label} · {e.loc} · {parseYMD(e.date).getMonth() + 1}/{parseYMD(e.date).getDate()}</div>
                 </div>
-                <span className="exp-amt">{money(e.amt, trip.sym)}</span>
+                <span className="exp-amt">{n(e.amt)}</span>
               </div>
             )
           })}
