@@ -367,3 +367,9 @@
 - 範圍：src/components/PlaceSheet.jsx
 - 做了什麼：移除名稱輸入框的 autoFocus
 - 為什麼：與日誌面板同一個問題，開啟地點面板時掛載階段的 focus 造成 .sheet 容器自動捲動並彈出手機鍵盤
+
+## 2026-07-21 21:38
+- 版號：v1.28
+- 範圍：src/components/AddTripSheet.jsx、CompanionSheet.jsx、ItinSheet.jsx、FlightSheet.jsx、StaySheet.jsx
+- 做了什麼：移除各面板首欄輸入框的 autoFocus（StubScreen 的個人名稱編輯保留，因為是使用者主動點擊觸發）
+- 為什麼：統一為「只有使用者點擊輸入框才開鍵盤」，避免面板滑入動畫期間的掛載 focus 造成捲動錯位與手機鍵盤自動彈出

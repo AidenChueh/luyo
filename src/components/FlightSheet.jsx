@@ -122,7 +122,7 @@ export default function FlightSheet() {
         </div>
 
         <div className="row" style={{ gap: 12 }}>
-          <div className="field" style={{ flex: 1 }}><label>航空公司</label><input type="text" value={v.airline || ''} onChange={set('airline')} placeholder="長榮航空" autoFocus /></div>
+          <div className="field" style={{ flex: 1 }}><label>航空公司</label><input type="text" value={v.airline || ''} onChange={set('airline')} placeholder="長榮航空" /></div>
           <div className="field" style={{ width: 110 }}><label>航班編號</label><input type="text" value={v.no || ''} onChange={set('no')} placeholder="BR132" /></div>
         </div>
         <div className="field"><label>日期</label><input type="date" value={v.date || ''} onChange={set('date')} /></div>

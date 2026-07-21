@@ -35,7 +35,7 @@ export default function StaySheet() {
           <span style={{ width: 40 }} />
         </div>
 
-        <div className="field" style={{ marginTop: 16 }}><label>名稱</label><input type="text" value={v.name || ''} onChange={set('name')} placeholder="飯店名稱" autoFocus /></div>
+        <div className="field" style={{ marginTop: 16 }}><label>名稱</label><input type="text" value={v.name || ''} onChange={set('name')} placeholder="飯店名稱" /></div>
         <div className="field"><label>地址</label><input type="text" value={v.address || ''} onChange={set('address')} placeholder="地址" /></div>
         <div className="row" style={{ gap: 12 }}>
           <div className="field" style={{ flex: 1 }}><label>電話</label><input type="text" value={v.phone || ''} onChange={set('phone')} placeholder="+81 ..." /></div>

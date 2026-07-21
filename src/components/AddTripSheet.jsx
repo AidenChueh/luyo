@@ -112,7 +112,7 @@ export default function AddTripSheet() {
 
         <div className="field" style={{ marginTop: 18 }}>
           <label>旅程名稱</label>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：京都・大阪輕旅行" autoFocus />
+          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：京都・大阪輕旅行" />
         </div>
 
         <div className="row" style={{ gap: 12 }}>

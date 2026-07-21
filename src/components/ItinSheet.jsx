@@ -57,7 +57,7 @@ export default function ItinSheet() {
 
         <div className="field" style={{ marginTop: 16 }}>
           <label>標題</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：清水寺散步" autoFocus />
+          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="例如：清水寺散步" />
         </div>
 
         <div className="field">

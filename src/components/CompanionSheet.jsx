@@ -45,7 +45,7 @@ export default function CompanionSheet() {
             {avatar && <button onClick={() => setAvatar('')} style={{ marginLeft: 'auto', color: 'var(--danger)', fontSize: 12.5, fontWeight: 600 }}>移除</button>}
           </div>
         </div>
-        <div className="field"><label>姓名</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="同行者姓名" autoFocus /></div>
+        <div className="field"><label>姓名</label><input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="同行者姓名" /></div>
         <div className="field"><label>聯絡方式</label><input type="text" value={contact} onChange={(e) => setContact(e.target.value)} placeholder="電話 / LINE / Email（可留空）" /></div>
         <button className="btn btn-primary btn-block" style={{ marginTop: 18, opacity: valid ? 1 : 0.5 }} onClick={submit} disabled={!valid}>
           <Icon name="check" size={19} /> {editId ? '儲存變更' : '新增'}
