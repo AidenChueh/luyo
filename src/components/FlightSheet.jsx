@@ -16,7 +16,9 @@ export default function FlightSheet() {
   useEffect(() => {
     if (!open) return
     const f = editId ? getFlights(tripId).find((x) => x.id === editId) : null
-    setV(f || { dir: 'outbound', airline: '', no: '', date: '', dep: '', depAp: '', arr: '', arrAp: '', terminal: '', seat: '', baggage: '', price: '' })
+    // 舊資料的行李額度是自由文字（例如「23kg × 2」），只取開頭數字帶入
+    setV(f ? { ...f, baggage: String(f.baggage ?? '').match(/[\d.]+/)?.[0] || '' }
+          : { dir: 'outbound', airline: '', no: '', date: '', dep: '', depAp: '', arr: '', arrAp: '', terminal: '', seat: '', baggage: '', price: '' })
     setScanning(false); setScanErr(''); setLegs([])
   }, [open, editId, tripId])
 
@@ -137,7 +139,13 @@ export default function FlightSheet() {
           <div className="field" style={{ width: 90 }}><label>航廈</label><input type="text" value={v.terminal || ''} onChange={set('terminal')} placeholder="T1" /></div>
           <div className="field" style={{ flex: 1 }}><label>座位</label><input type="text" value={v.seat || ''} onChange={set('seat')} placeholder="34A / 34B" /></div>
         </div>
-        <div className="field"><label>行李額度</label><input type="text" value={v.baggage || ''} onChange={set('baggage')} placeholder="23kg × 2" /></div>
+        <div className="field">
+          <label>行李額度</label>
+          <div style={{ position: 'relative' }}>
+            <input type="text" inputMode="decimal" value={v.baggage ?? ''} onChange={(e) => setV((p) => ({ ...p, baggage: decimalInput(e.target.value) }))} placeholder="23" style={{ paddingRight: 46 }} />
+            <span className="muted" style={{ position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)', fontSize: 14, fontWeight: 600, pointerEvents: 'none' }}>kg</span>
+          </div>
+        </div>
         <div className="field"><label>價格（會同步到記帳）</label><input type="text" inputMode="decimal" value={v.price ?? ''} onChange={(e) => setV((p) => ({ ...p, price: decimalInput(e.target.value) }))} placeholder="0" /></div>
 
         <button className="btn btn-primary btn-block" style={{ marginTop: 16, opacity: valid ? 1 : 0.5 }} onClick={submit} disabled={!valid}>

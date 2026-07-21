@@ -19,6 +19,12 @@ const duration = (dep, arr) => {
   return `${Math.floor(d / 60)}h ${String(d % 60).padStart(2, '0')}m`
 }
 
+// 純數字才補 kg；舊資料是「23kg × 2」這種自由文字，原樣顯示避免重複單位
+const baggageText = (b) => {
+  const s = String(b ?? '').trim()
+  return /^[\d.]+$/.test(s) ? `${s}kg` : s
+}
+
 function FlightCard({ f, onClick, item, handle }) {
   const dur = duration(f.dep, f.arr)
   return (
@@ -57,7 +63,7 @@ function FlightCard({ f, onClick, item, handle }) {
       <div className="fc-foot">
         {f.terminal && <span className="fc-chip">航廈 {f.terminal}</span>}
         {f.seat && <span className="fc-chip">座位 {f.seat}</span>}
-        {f.baggage && <span className="fc-chip">行李 {f.baggage}</span>}
+        {f.baggage && <span className="fc-chip">行李 {baggageText(f.baggage)}</span>}
       </div>
     </div>
   )
