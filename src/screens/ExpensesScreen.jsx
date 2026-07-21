@@ -1,15 +1,24 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Icon from '../components/Icon'
 import { CATEGORIES } from '../data/seed'
 import { useStore } from '../store'
 import { money, parseYMD, pct } from '../lib/format'
-import { HOME, CURRENCY_LIST, convert, toHome, symbolOf } from '../lib/rates'
+import { HOME, CURRENCY_LIST, convert, toHome, symbolOf, useRates, refreshRates } from '../lib/rates'
+
+const rateNote = (meta) => {
+  if (!meta.at) return '離線備援匯率'
+  const d = new Date(meta.at)
+  const stamp = `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  return `匯率更新於 ${stamp}`
+}
 
 function Converter({ defaultFrom, onClose }) {
   const [amt, setAmt] = useState('1000')
   const [from, setFrom] = useState(defaultFrom)
   const [to, setTo] = useState(HOME)
+  const meta = useRates()
+  useEffect(() => { refreshRates() }, [])
   const result = convert(Number(amt) || 0, from, to)
   const Sel = ({ value, onChange }) => (
     <select value={value} onChange={(e) => onChange(e.target.value)} style={{ padding: '12px 10px', borderRadius: 'var(--r-md)', border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 15, color: 'var(--ink)' }}>
@@ -37,7 +46,7 @@ function Converter({ defaultFrom, onClose }) {
         <div className="card" style={{ padding: 18, textAlign: 'center', marginTop: 8 }}>
           <div className="muted" style={{ fontSize: 12, fontWeight: 600 }}>{symbolOf(from)}{(Number(amt) || 0).toLocaleString()} =</div>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 600, marginTop: 4 }}>{symbolOf(to)}{Math.round(result).toLocaleString()}</div>
-          <div className="muted" style={{ fontSize: 11.5, marginTop: 6 }}>1 {from} ≈ {symbolOf(to)}{convert(1, from, to).toFixed(2)} · 原型固定匯率</div>
+          <div className="muted" style={{ fontSize: 11.5, marginTop: 6 }}>1 {from} ≈ {symbolOf(to)}{convert(1, from, to).toFixed(2)} · {rateNote(meta)}</div>
         </div>
       </div>
     </div>
@@ -85,6 +94,7 @@ export default function ExpensesScreen() {
   const list = getExpenses(trip.id) || []
   const [tab, setTab] = useState('pie')
   const [conv, setConv] = useState(false)
+  useRates() // 匯率更新後重繪「≈ NT$」換算
 
   const { byCat, total, byDay } = useMemo(() => {
     const cat = {}, day = {}

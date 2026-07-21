@@ -4,10 +4,13 @@ import { HashRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { StoreProvider } from './store.jsx'
 import { getTheme, applyTheme } from './lib/theme'
+import { refreshRates } from './lib/rates'
 import './styles/tokens.css'
 import './styles/global.css'
 
 applyTheme(getTheme())
+// 背景更新，不擋首屏；失敗時沿用快取或備援值
+refreshRates()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>

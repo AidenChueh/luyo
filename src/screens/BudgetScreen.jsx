@@ -4,7 +4,7 @@ import Icon from '../components/Icon'
 import { CATEGORIES, BUDGET_ALERTS } from '../data/seed'
 import { useStore } from '../store'
 import { money, pct } from '../lib/format'
-import { HOME, toHome } from '../lib/rates'
+import { HOME, toHome, useRates } from '../lib/rates'
 import { generateBudgetAnalysis, getBudgetAnalysis, saveBudgetAnalysis } from '../lib/ai'
 
 function Ring({ value }) {
@@ -89,6 +89,7 @@ export default function BudgetScreen() {
   const nav = useNavigate()
   const { trips, getTrip, getExpenses, getSpent } = useStore()
   const trip = getTrip(id) || trips.find((t) => t.status === 'ongoing') || trips[0]
+  useRates() // 匯率更新後重繪「≈ NT$」換算
   if (!trip) return null
   const list = getExpenses(trip.id) || []
   const spent = getSpent(trip)

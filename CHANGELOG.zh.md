@@ -306,3 +306,8 @@
 - 範圍：src/screens/StubScreen.jsx、SummaryScreen.jsx、BudgetScreen.jsx
 - 做了什麼：收起其餘 AI 入口——「我的」頁的 Anthropic API key 設定區塊、旅程總結頁的 AI 旅程回顧、預算頁的 AI 預算分析，一律只註解掉使用處的 JSX。doRecap、AIBudgetCard、aiKey/saveKey/clearKey 等處理函式與 lib/ai.js 的全部生成函式完整保留，之後要開啟把註解拿掉即可。加上 v1.14 已關閉的機票截圖辨識與 v1.11 已關閉的 AI 行程規劃，目前四個 AI 入口皆未顯示；已逐一確認四段文字都不在打包結果中。build 驗證通過
 - 為什麼：使用者決定先不啟用需要付費 API 額度的功能，連同 API key 欄位一併收起
+
+## 2026-07-21 10:00（v1.17）
+- 範圍：src/lib/rates.js、src/main.jsx、src/screens/ExpensesScreen.jsx、BudgetScreen.jsx
+- 做了什麼：匯率改為自動抓取實際值。根因是 rates.js 原本就是原型階段寫死的靜態表（註解也寫明「正式版可接 API」），從未更新，除美金外多數幣別已偏離 5% 上下（澳幣 21.3 vs 實際 22.63，差 6.2%）。改法：接 open.er-api.com（免 API key、免付費、每日更新），啟動時背景抓取並存入 localStorage（`luyo:rates:v1`），一天更新一次；模組載入時先套用快取讓首次 render 就有值。API 回傳為 1 TWD = N 外幣，程式內轉為 1 外幣 = N 台幣；只取 App 開放的 9 種幣別，並驗證每個值為有限正數才採用。抓取失敗、離線或資料異常時退回原本的靜態表，不會壞掉。匯率為模組層狀態，另提供 useRates() 訂閱讓 ExpensesScreen 與 BudgetScreen 在更新完成後重繪「≈ NT$」換算；匯率換算頁的「原型固定匯率」改為顯示實際更新時間（無資料時顯示「離線備援匯率」）。BudgetScreen 的 useRates() 置於早退之前以符合 hooks 規則。build 驗證通過，並以實際 API 資料驗算換算方向與往返一致性
+- 為什麼：使用者回報澳幣匯率與實際不符，確認為靜態表過時後選擇接免費 API 自動更新
