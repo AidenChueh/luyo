@@ -170,7 +170,7 @@ export default function SummaryScreen() {
         </div>
       </div>
 
-      {/* AI 旅程回顧 */}
+      {/* AI 旅程回顧暫時關閉。doRecap 與 lib/ai.js 的 generateRecap 都保留，要開啟時把這段註解拿掉即可。
       <div className="pad section">
         <div className="card" style={{ padding: 16 }}>
           <div className="between" style={{ marginBottom: 10 }}>
@@ -205,6 +205,7 @@ export default function SummaryScreen() {
           </button>
         </div>
       </div>
+      */}
 
       {/* 詳細統計 */}
       <div className="pad section">

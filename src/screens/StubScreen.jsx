@@ -118,6 +118,8 @@ export default function StubScreen() {
         </button>
       </Group>
 
+      {/* API key 設定暫時收起（AI 功能目前一律走範例生成）。aiKey/saveKey/clearKey
+          與 lib/ai.js 的 getApiKey/setApiKey 都保留，要開啟時把這段註解拿掉即可。
       <Group title="AI">
         <div style={{ padding: 16 }}>
           <div className="field" style={{ marginTop: 0 }}>
@@ -135,6 +137,7 @@ export default function StubScreen() {
           </p>
         </div>
       </Group>
+      */}
 
       <Group title="資料與 App">
         {installed ? (
@@ -158,7 +161,7 @@ export default function StubScreen() {
       <Group title="關於">
         <div className="set-row" style={{ cursor: 'default' }}>
           <span className="set-ic"><Icon name="sparkles" size={18} /></span>
-          <span className="set-label">luyo<span className="muted" style={{ fontWeight: 500, fontSize: 11.5, display: 'block' }}>個人旅遊規劃 · 原型 v1.15</span></span>
+          <span className="set-label">luyo<span className="muted" style={{ fontWeight: 500, fontSize: 11.5, display: 'block' }}>個人旅遊規劃 · 原型 v1.16</span></span>
         </div>
       </Group>
 

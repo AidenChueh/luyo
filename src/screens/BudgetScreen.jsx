@@ -146,9 +146,11 @@ export default function BudgetScreen() {
         </div>
       </div>
 
+      {/* AI 預算分析暫時關閉（保留 AIBudgetCard 實作，之後要開啟時取消註解即可）
       <div className="pad section">
         <AIBudgetCard trip={trip} stats={aiStats} />
       </div>
+      */}
 
       {/* Tiered alerts */}
       <div className="pad section">

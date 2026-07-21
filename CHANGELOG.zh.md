@@ -301,3 +301,8 @@
 - 範圍：src/components/FlightSheet.jsx
 - 做了什麼：關閉 v1.14 的機票截圖辨識入口。比照 AI 行程規劃的做法，只把 FlightSheet 內的上傳 UI 區塊註解掉；scan/createAll 等處理函式與 lib/ai.js 的 extractFlightsFromImage 完整保留，之後要開啟把註解拿掉即可。已確認該段文字不再出現在打包結果中。build 驗證通過
 - 為什麼：該功能需要 Console 的 API 額度（與 Claude Pro 訂閱分開計費），使用者決定先不啟用
+
+## 2026-07-21 09:49（v1.16）
+- 範圍：src/screens/StubScreen.jsx、SummaryScreen.jsx、BudgetScreen.jsx
+- 做了什麼：收起其餘 AI 入口——「我的」頁的 Anthropic API key 設定區塊、旅程總結頁的 AI 旅程回顧、預算頁的 AI 預算分析，一律只註解掉使用處的 JSX。doRecap、AIBudgetCard、aiKey/saveKey/clearKey 等處理函式與 lib/ai.js 的全部生成函式完整保留，之後要開啟把註解拿掉即可。加上 v1.14 已關閉的機票截圖辨識與 v1.11 已關閉的 AI 行程規劃，目前四個 AI 入口皆未顯示；已逐一確認四段文字都不在打包結果中。build 驗證通過
+- 為什麼：使用者決定先不啟用需要付費 API 額度的功能，連同 API key 欄位一併收起
