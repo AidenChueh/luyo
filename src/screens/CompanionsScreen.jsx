@@ -30,7 +30,7 @@ export default function CompanionsScreen() {
       <header className="topbar solid">
         <button className="iconbtn ghost" onClick={() => nav(`/trip/${id}`)} aria-label="返回"><Icon name="chevronLeft" size={22} /></button>
         <div>
-          <div className="greeting">{trip.name}</div>
+          <div className="greeting">{trip.name} · {trip.sym} {trip.currency}</div>
           <h1>同行者與分帳</h1>
         </div>
         <div className="grow" />
@@ -65,7 +65,7 @@ export default function CompanionsScreen() {
               <Avatar name={n.name} color={n.color} size={36} />
               <div className="t">{n.name}</div>
               <span className="exp-amt" style={{ color: n.value > 0 ? 'var(--accent)' : n.value < 0 ? 'var(--danger)' : 'var(--muted)' }}>
-                {n.value > 0 ? '+' : ''}{money(n.value, trip.sym)}
+                {n.value > 0 ? '+' : ''}{money(n.value, '')}
               </span>
             </div>
           ))}
@@ -82,7 +82,7 @@ export default function CompanionsScreen() {
                   <Icon name="arrowUpRight" size={16} style={{ color: 'var(--muted)', transform: 'rotate(45deg)' }} />
                   <Avatar name={t.to.name} color={t.to.color} size={34} />
                   <span style={{ fontWeight: 600, fontSize: 14 }}>{t.to.name}</span>
-                  <span className="exp-amt" style={{ marginLeft: 'auto', color: 'var(--primary)' }}>{money(t.amt, trip.sym)}</span>
+                  <span className="exp-amt" style={{ marginLeft: 'auto', color: 'var(--primary)' }}>{money(t.amt, '')}</span>
                 </div>
               ))}
             </div>

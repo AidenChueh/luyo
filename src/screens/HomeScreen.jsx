@@ -37,8 +37,9 @@ function MiniBudget({ trip, spent }) {
   return (
     <div className="mini-budget">
       <div className="row" style={{ justifyContent: 'space-between', fontSize: 12, fontWeight: 600, marginBottom: 6 }}>
-        <span>已花 {money(spent, trip.sym)}</span>
-        <span style={{ opacity: 0.9 }}>剩 {money(trip.budget - spent, trip.sym)}</span>
+        {/* 首頁同時列出多趟不同幣別的旅程，幣別在每張卡標一次 */}
+        <span>{trip.currency} 已花 {money(spent, '')}</span>
+        <span style={{ opacity: 0.9 }}>剩 {money(trip.budget - spent, '')}</span>
       </div>
       <div className="bar"><i style={{ width: `${Math.min(100, p)}%`, background: barColor }} /></div>
     </div>

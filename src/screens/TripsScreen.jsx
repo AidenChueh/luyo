@@ -80,7 +80,7 @@ export default function TripsScreen() {
                   <div className="track" style={{ height: 6, marginTop: 10 }}>
                     <i style={{ width: `${Math.min(100, p)}%`, background: p >= 85 ? 'var(--danger)' : p >= 50 ? 'var(--amber)' : 'var(--accent)' }} />
                   </div>
-                  <div className="muted" style={{ fontSize: 11.5, marginTop: 5 }}>{money(spent, t.sym)} / {money(t.budget, t.sym)}</div>
+                  <div className="muted" style={{ fontSize: 11.5, marginTop: 5 }}>{t.currency} {money(spent, '')} / {money(t.budget, '')}</div>
                 </div>
               </article>
             )

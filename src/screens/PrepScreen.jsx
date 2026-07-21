@@ -94,7 +94,7 @@ export default function PrepScreen() {
       <header className="topbar solid">
         <button className="iconbtn ghost" onClick={() => nav(`/trip/${id}`)} aria-label="返回"><Icon name="chevronLeft" size={22} /></button>
         <div>
-          <div className="greeting">{trip.name}</div>
+          <div className="greeting">{trip.name} · {trip.sym} {trip.currency}</div>
           <h1>行前準備</h1>
         </div>
       </header>
@@ -198,7 +198,7 @@ export default function PrepScreen() {
                   label={
                     <div className="between">
                       <span className="ct">{it.name} <span className="muted" style={{ fontSize: 12 }}>×{it.qty}</span></span>
-                      {it.price > 0 && <span className="muted" style={{ fontSize: 12.5, fontWeight: 600 }}>{money(it.price * it.qty, trip.sym)}</span>}
+                      {it.price > 0 && <span className="muted" style={{ fontSize: 12.5, fontWeight: 600 }}>{money(it.price * it.qty, '')}</span>}
                     </div>
                   } />
               ))}
@@ -207,7 +207,7 @@ export default function PrepScreen() {
             {prep.shopping.length > 0 && (
               <div className="between" style={{ marginTop: 10, fontSize: 13, fontWeight: 700 }}>
                 <span className="muted">預估總額</span>
-                <span>{money(prep.shopping.reduce((s, i) => s + i.price * i.qty, 0), trip.sym)}</span>
+                <span>{money(prep.shopping.reduce((s, i) => s + i.price * i.qty, 0), '')}</span>
               </div>
             )}
           </div>

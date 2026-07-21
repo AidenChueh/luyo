@@ -166,7 +166,7 @@ export default function ItineraryScreen() {
       <header className="topbar solid">
         <button className="iconbtn ghost" onClick={() => nav(`/trip/${id}`)} aria-label="返回"><Icon name="chevronLeft" size={22} /></button>
         <div>
-          <div className="greeting">{trip.city}</div>
+          <div className="greeting">{trip.city} · {trip.sym} {trip.currency}</div>
           <h1>行程規劃</h1>
         </div>
         <div className="grow" />
@@ -199,7 +199,7 @@ export default function ItineraryScreen() {
           <div className="muted" style={{ fontSize: 13, fontWeight: 600 }}>{items.length} 個行程</div>
           <div className="row" style={{ gap: 6, fontSize: 13, fontWeight: 700 }}>
             <Icon name="wallet" size={15} style={{ color: 'var(--muted)' }} />
-            當日預估 {money(dayCost, trip.sym)}
+            當日預估 {money(dayCost, '')}
           </div>
         </div>
 
@@ -244,7 +244,7 @@ export default function ItineraryScreen() {
                         <span className="row" style={{ gap: 5, color: 'var(--primary)', fontSize: 12.5, fontWeight: 700 }}>
                           <Icon name="mapPin" size={14} /> Google Maps
                         </span>
-                        <span className="cost">{it.act ? money(it.act, trip.sym) : it.est ? `預估 ${money(it.est, trip.sym)}` : '—'}</span>
+                        <span className="cost">{it.act ? money(it.act, '') : it.est ? `預估 ${money(it.est, '')}` : '—'}</span>
                       </div>
                     </div>
                   </div>

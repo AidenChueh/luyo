@@ -81,7 +81,7 @@ export default function LogisticsScreen() {
       <header className="topbar solid">
         <button className="iconbtn ghost" onClick={() => nav(`/trip/${id}`)} aria-label="返回"><Icon name="chevronLeft" size={22} /></button>
         <div>
-          <div className="greeting">{trip.name}</div>
+          <div className="greeting">{trip.name} · {trip.sym} {trip.currency}</div>
           <h1>交通與住宿</h1>
         </div>
         <div className="grow" />
@@ -126,7 +126,7 @@ export default function LogisticsScreen() {
                   <div className="kv"><span className="k">入住 / 退房</span><span className="v">{s.checkin?.slice(5)} → {s.checkout?.slice(5)}</span></div>
                   <div className="kv"><span className="k">訂房編號</span><span className="v">{s.bookingNo || '—'}</span></div>
                   <div className="kv"><span className="k">電話</span><span className="v">{s.phone || '—'}</span></div>
-                  <div className="kv"><span className="k">價格</span><span className="v">{money(s.price, trip.sym)}</span></div>
+                  <div className="kv"><span className="k">價格</span><span className="v">{money(s.price, '')}</span></div>
                 </div>
                 <div className="foot" style={{ marginTop: 12 }}>
                   {s.url

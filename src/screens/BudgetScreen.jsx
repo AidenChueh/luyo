@@ -90,6 +90,8 @@ export default function BudgetScreen() {
   const { trips, getTrip, getExpenses, getSpent } = useStore()
   const trip = getTrip(id) || trips.find((t) => t.status === 'ongoing') || trips[0]
   useRates() // 匯率更新後重繪「≈ NT$」換算
+  // 幣別統一標在頁首，內文金額不再重複前綴
+  const n = (v) => money(v, '')
   if (!trip) return null
   const list = getExpenses(trip.id) || []
   const spent = getSpent(trip)
@@ -118,7 +120,7 @@ export default function BudgetScreen() {
       <header className="topbar solid">
         {id ? <button className="iconbtn ghost" onClick={() => nav(`/trip/${trip.id}`)} aria-label="返回"><Icon name="chevronLeft" size={22} /></button> : null}
         <div>
-          <div className="greeting">{trip.name}</div>
+          <div className="greeting">{trip.name} · {trip.sym} {trip.currency}</div>
           <h1>預算管理</h1>
         </div>
       </header>
@@ -129,20 +131,20 @@ export default function BudgetScreen() {
           <div className="stat-grid" style={{ marginTop: 8 }}>
             <div style={{ textAlign: 'center', padding: 8 }}>
               <div className="muted" style={{ fontSize: 12, fontWeight: 600 }}>總預算</div>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 19, fontWeight: 600, marginTop: 3 }}>{money(trip.budget, trip.sym)}</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: 19, fontWeight: 600, marginTop: 3 }}>{n(trip.budget)}</div>
               {trip.currency !== HOME && <div className="muted" style={{ fontSize: 11 }}>≈ NT${Math.round(toHome(trip.budget, trip.currency)).toLocaleString()}</div>}
             </div>
             <div style={{ textAlign: 'center', padding: 8 }}>
               <div className="muted" style={{ fontSize: 12, fontWeight: 600 }}>{over ? '超出' : '剩餘'}</div>
               <div style={{ fontFamily: 'var(--font-display)', fontSize: 19, fontWeight: 600, marginTop: 3, color: over ? 'var(--danger)' : 'var(--accent)' }}>
-                {money(Math.abs(remaining), trip.sym)}
+                {n(Math.abs(remaining))}
               </div>
             </div>
           </div>
           <div className="divider" style={{ margin: '14px 0' }} />
           <div className="between" style={{ fontSize: 13.5, fontWeight: 600 }}>
             <span className="muted">每日預算</span>
-            <span>{money(dailyBudget, trip.sym)} / 天</span>
+            <span>{n(dailyBudget)} / 天</span>
           </div>
         </div>
       </div>
@@ -164,7 +166,7 @@ export default function BudgetScreen() {
                 <span className="dot" style={{ background: reached ? a.color : 'var(--line-strong)' }} />
                 <div>
                   <div className="t">{a.level}%　{a.label}</div>
-                  <div className="s">{money(trip.budget * a.level / 100, trip.sym)}</div>
+                  <div className="s">{n(trip.budget * a.level / 100)}</div>
                 </div>
                 <span className="badge" style={{ color: reached ? a.color : 'var(--muted)' }}>
                   {reached ? <span className="row" style={{ gap: 4 }}><Icon name="bell" size={14} /> 已觸發</span> : '未達'}
@@ -194,7 +196,7 @@ export default function BudgetScreen() {
                     </span>
                     {c.label}
                   </span>
-                  <span>{money(v, trip.sym)}</span>
+                  <span>{n(v)}</span>
                 </div>
                 <div className="track" style={{ height: 7 }}><i style={{ width: `${cp}%`, background: c.color }} /></div>
               </div>

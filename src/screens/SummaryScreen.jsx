@@ -110,7 +110,7 @@ export default function SummaryScreen() {
       <header className="topbar solid">
         <button className="iconbtn ghost" onClick={() => nav(`/trip/${id}`)} aria-label="返回"><Icon name="chevronLeft" size={22} /></button>
         <div>
-          <div className="greeting">{trip.status === 'completed' ? '行程已結束' : '即時回顧'}</div>
+          <div className="greeting">{trip.status === 'completed' ? '行程已結束' : '即時回顧'} · {trip.sym} {trip.currency}</div>
           <h1>旅程總結</h1>
         </div>
       </header>
@@ -212,7 +212,7 @@ export default function SummaryScreen() {
         <div className="section-title" style={{ fontSize: 16, marginBottom: 12 }}>詳細數據</div>
         <div className="stat-grid">
           <div className="stat"><div className="k"><Icon name="calendar" size={14} /> 總天數</div><div className="v">{trip.days}</div><div className="s">{dateRange(trip.start, trip.end)}</div></div>
-          <div className="stat"><div className="k"><Icon name="wallet" size={14} /> 總花費</div><div className="v">{money(s.spent, trip.sym)}</div><div className="s">日均 {money(s.dailyAvg, trip.sym)}</div></div>
+          <div className="stat"><div className="k"><Icon name="wallet" size={14} /> 總花費</div><div className="v">{money(s.spent, '')}</div><div className="s">日均 {money(s.dailyAvg, '')}</div></div>
           <div className="stat"><div className="k"><Icon name="check" size={14} /> 完成行程</div><div className="v">{s.itinCount}</div><div className="s">跨 {trip.days} 天</div></div>
           <div className="stat"><div className="k"><Icon name="mapPin" size={14} /> 造訪地點</div><div className="v">{s.placeCount}</div><div className="s">景點 {s.sights}·餐廳 {s.restaurants}·商場 {s.malls}</div></div>
           <div className="stat"><div className="k"><Icon name="image" size={14} /> 照片</div><div className="v">{s.photos}</div><div className="s">已分日整理</div></div>
