@@ -248,6 +248,8 @@ export const PLACE_TAG = {
 }
 // type → 行程分類
 export const PLACE_TO_ITIN = { sight: 'sight', food: 'food', cafe: 'food', mall: 'shopping' }
+// 行程分類 → 地點類型（交通、住宿在地點庫沒有對應類型，一律歸「景點」）
+export const ITIN_TO_PLACE = { sight: 'sight', food: 'food', shopping: 'mall', transport: 'sight', hotel: 'sight' }
 
 export const places = {
   kyoto: [

@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { expenses as seedExpenses, trips as seedTrips, prep as seedPrep, prepTemplate, itinerary as seedItin, places as seedPlaces, journal as seedJournal, flights as seedFlights, stays as seedStays, photos as seedPhotos, companions as seedCompanions } from './data/seed'
+import { expenses as seedExpenses, trips as seedTrips, prep as seedPrep, prepTemplate, itinerary as seedItin, places as seedPlaces, journal as seedJournal, flights as seedFlights, stays as seedStays, photos as seedPhotos, companions as seedCompanions, ITIN_TO_PLACE } from './data/seed'
 import { removeRecap, removePlan, removeBudgetAnalysis } from './lib/ai'
+import { parseGmaps } from './lib/gmaps'
+import { geocode } from './lib/geocode'
 
 const StoreCtx = createContext(null)
 const EXP_KEY = 'luyo:expenses:v1'
@@ -231,6 +233,7 @@ export function StoreProvider({ children }) {
       return { ...prev, [tripId]: { ...trip, [day]: [...list, { id: iid, ...item }] } }
     })
     syncLinkedExpense(tripId, `lnk-${iid}`, itinExpense(tripId, day, item))
+    syncLinkedPlace(tripId, iid, item)
   }
   const editItin = (tripId, day, itemId, patch) => {
     setItinByTrip((prev) => {
@@ -238,6 +241,7 @@ export function StoreProvider({ children }) {
       return { ...prev, [tripId]: { ...prev[tripId], [day]: list } }
     })
     syncLinkedExpense(tripId, `lnk-${itemId}`, itinExpense(tripId, day, patch))
+    syncLinkedPlace(tripId, itemId, patch)
   }
   const removeItin = (tripId, day, itemId) => {
     setItinByTrip((prev) => {
@@ -245,6 +249,7 @@ export function StoreProvider({ children }) {
       return { ...prev, [tripId]: { ...prev[tripId], [day]: list } }
     })
     syncLinkedExpense(tripId, `lnk-${itemId}`, null)
+    syncLinkedPlace(tripId, itemId, null)
   }
   const copyItinDay = (tripId, fromDay, toDay) => {
     const src = itinByTrip[tripId]?.[fromDay] || []
@@ -254,13 +259,55 @@ export function StoreProvider({ children }) {
       return { ...prev, [tripId]: { ...prev[tripId], [toDay]: [...dst, ...cloned] } }
     })
     // 複製出來的是各自獨立的行程，有實際花費就各自建立對應支出
-    cloned.forEach((it) => syncLinkedExpense(tripId, `lnk-${it.id}`, itinExpense(tripId, toDay, it)))
+    cloned.forEach((it) => {
+      syncLinkedExpense(tripId, `lnk-${it.id}`, itinExpense(tripId, toDay, it))
+      syncLinkedPlace(tripId, it.id, it)
+    })
+  }
+
+  const syncLinkedPlace = async (tripId, itinId, it) => {
+    const pid = `lnk-${itinId}`
+    if (!it || !it.maps) {
+      setPlaceByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((p) => p.id !== pid) }))
+      return
+    }
+    const fields = {
+      id: pid,
+      name: it.title || '未命名',
+      type: ITIN_TO_PLACE[it.cat] || 'sight',
+      tag: 'must',
+      rating: it.rating || 0,
+      note: it.note || '',
+      maps: it.maps,
+      photo: '',
+    }
+    let coord = parseGmaps(it.maps)
+    if (!coord) {
+      // 短網址不含座標且無法在瀏覽器跟隨轉址，退回用名稱查 Nominatim
+      const trip = getTrip(tripId)
+      const hint = [trip?.city, trip?.country].filter((s) => s && s !== '—').join(' ')
+      try {
+        coord = await geocode(`${fields.name} ${hint}`.trim())
+      } catch {
+        coord = null
+      }
+    }
+    setPlaceByTrip((prev) => {
+      const list = prev[tripId] || []
+      const next = { ...fields, lat: coord?.lat, lng: coord?.lng }
+      return {
+        ...prev,
+        [tripId]: list.some((p) => p.id === pid)
+          ? list.map((p) => (p.id === pid ? next : p))
+          : [next, ...list],
+      }
+    })
   }
 
   // ---- 地點庫 ----
   const getPlaces = (tripId) => placeByTrip[tripId] || []
   const addPlace = (tripId, place) =>
-    setPlaceByTrip((prev) => ({ ...prev, [tripId]: [{ id: uid('pl'), ...place }, ...(prev[tripId] || [])] }))
+    setPlaceByTrip((prev) => ({ ...prev, [tripId]: [{ id: place.id || uid('pl'), ...place }, ...(prev[tripId] || [])] }))
   const editPlace = (tripId, placeId, patch) =>
     setPlaceByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).map((p) => (p.id === placeId ? { ...p, ...patch } : p)) }))
   const removePlace = (tripId, placeId) =>
