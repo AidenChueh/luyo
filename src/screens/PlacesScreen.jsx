@@ -59,8 +59,9 @@ export default function PlacesScreen() {
           {list.map((p) => {
             const t = PLACE_TYPE[p.type]
             const g = PLACE_TAG[p.tag]
+            const linked = p.id.startsWith('lnk-')
             return (
-              <article key={p.id} className="card" style={{ padding: 14 }} onClick={() => openPlace(id, p.id)}>
+              <article key={p.id} className="card" style={{ padding: 14 }} onClick={() => (linked ? nav(`/trip/${id}/itinerary`) : openPlace(id, p.id))}>
                 <div className="row" style={{ gap: 12 }}>
                   {p.photo
                     ? <span className="exp-ic" style={{ backgroundImage: `url(${p.photo})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
@@ -72,6 +73,7 @@ export default function PlacesScreen() {
                     </div>
                     <div className="row" style={{ gap: 8, marginTop: 4 }}>
                       <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>{t.label}</span>
+                      {linked && <span className="tag" style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}>來自行程</span>}
                       {p.rating > 0 && (
                         <span className="row" style={{ gap: 1, color: 'var(--amber)' }}>
                           {Array.from({ length: p.rating }).map((_, i) => <Icon key={i} name="star" size={12} fill />)}
@@ -85,9 +87,11 @@ export default function PlacesScreen() {
                   {p.maps
                     ? <a href={p.maps} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="row" style={{ gap: 5, color: 'var(--primary)', fontSize: 12.5, fontWeight: 700 }}><Icon name="mapPin" size={14} /> Google Maps</a>
                     : <span className="muted" style={{ fontSize: 12.5 }}>無地圖連結</span>}
-                  <button className="row" style={{ gap: 5, color: 'var(--accent)', fontSize: 12.5, fontWeight: 700 }} onClick={(e) => { e.stopPropagation(); addToItin(p) }}>
-                    <Icon name="plus" size={15} /> 加入行程
-                  </button>
+                  {!linked && (
+                    <button className="row" style={{ gap: 5, color: 'var(--accent)', fontSize: 12.5, fontWeight: 700 }} onClick={(e) => { e.stopPropagation(); addToItin(p) }}>
+                      <Icon name="plus" size={15} /> 加入行程
+                    </button>
+                  )}
                 </div>
               </article>
             )
