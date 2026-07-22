@@ -373,3 +373,9 @@
 - 範圍：src/components/AddTripSheet.jsx、CompanionSheet.jsx、ItinSheet.jsx、FlightSheet.jsx、StaySheet.jsx
 - 做了什麼：移除各面板首欄輸入框的 autoFocus（StubScreen 的個人名稱編輯保留，因為是使用者主動點擊觸發）
 - 為什麼：統一為「只有使用者點擊輸入框才開鍵盤」，避免面板滑入動畫期間的掛載 focus 造成捲動錯位與手機鍵盤自動彈出
+
+## 2026-07-22 19:23
+- 版號：v1.29
+- 範圍：src/components/BottomNav.jsx、src/App.jsx、src/screens/ItineraryScreen.jsx、src/screens/PlacesScreen.jsx、src/screens/MapScreen.jsx、src/store.jsx、src/data/seed.js、src/lib/gmaps.js
+- 做了什麼：底部導航「地圖」tab 改為「行程」，新增全域 /itinerary 路由，行程頁無 tripId 時退回進行中的旅程；地圖頁改為亮「旅程」tab，仍從旅程總覽九宮格進入。新增 gmaps.js 解析 Google Maps 網址座標（@lat,lng、!3d!4d、?q=/ll=/query=）。行程項目填了 Google Maps 連結時自動在地點庫建立託管地點（id 前綴 lnk-）並顯示在地圖上；行程改動、清空連結或刪除時同步更新／移除。短網址不含座標，退回用行程標題查 Nominatim。地點庫的託管地點標示「來自行程」，點擊導回行程頁，不可手動編輯。
+- 為什麼：行程規劃是最常用的頁面，值得佔一個 tab；行程與地點庫原本各自為政，填了地圖連結卻不會反映到地圖上
