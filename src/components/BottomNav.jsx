@@ -9,7 +9,7 @@ const TABS = [
   { key: 'profile', label: '我的', icon: 'user', path: '/profile' },
 ]
 
-const SUB = /^\/trip\/[^/]+\/(itinerary|expenses|map)/
+const SUB = /^\/trip\/[^/]+\/(itinerary|expenses)/
 
 export default function BottomNav() {
   const nav = useNavigate()
