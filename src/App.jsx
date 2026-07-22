@@ -34,6 +34,7 @@ export default function App() {
           <Route path="/" element={<HomeScreen />} />
           <Route path="/trips" element={<TripsScreen />} />
           <Route path="/map" element={<MapScreen />} />
+          <Route path="/itinerary" element={<ItineraryScreen />} />
           <Route path="/expenses" element={<ExpensesScreen />} />
           <Route path="/profile" element={<StubScreen kind="profile" />} />
           <Route path="/trip/:id" element={<TripOverviewScreen />} />

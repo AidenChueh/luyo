@@ -132,8 +132,8 @@ function AIPlanCard({ trip }) {
 export default function ItineraryScreen() {
   const { id } = useParams()
   const nav = useNavigate()
-  const { getTrip, getItinerary, openItin, copyItinDay } = useStore()
-  const trip = getTrip(id)
+  const { trips, getTrip, getItinerary, openItin, copyItinDay } = useStore()
+  const trip = (id && getTrip(id)) || trips.find((t) => t.status === 'ongoing') || trips[0]
   const [day, setDay] = useState(() => Math.min(trip?.currentDay || 1, trip?.days || 1))
 
   useEffect(() => {
@@ -141,7 +141,7 @@ export default function ItineraryScreen() {
   }, [id])
 
   if (!trip) return null
-  const data = getItinerary(id)
+  const data = getItinerary(trip.id)
   const items = [...(data[day] || [])].sort((a, b) => toMin(a.start) - toMin(b.start))
 
   // 衝突偵測：時間區間重疊
@@ -157,20 +157,20 @@ export default function ItineraryScreen() {
 
   const copyDay = () => {
     if (day >= trip.days) { alert('已經是最後一天'); return }
-    copyItinDay(id, day, day + 1)
+    copyItinDay(trip.id, day, day + 1)
     setDay(day + 1)
   }
 
   return (
     <div className="scroll">
       <header className="topbar solid">
-        <button className="iconbtn ghost" onClick={() => nav(`/trip/${id}`)} aria-label="返回"><Icon name="chevronLeft" size={22} /></button>
+        <button className="iconbtn ghost" onClick={() => nav(`/trip/${trip.id}`)} aria-label="返回"><Icon name="chevronLeft" size={22} /></button>
         <div>
           <div className="greeting">{trip.city} · {trip.sym} {trip.currency}</div>
           <h1>行程規劃</h1>
         </div>
         <div className="grow" />
-        <button className="iconbtn" onClick={() => openItin(id, day)} aria-label="新增行程"><Icon name="plus" size={20} /></button>
+        <button className="iconbtn" onClick={() => openItin(trip.id, day)} aria-label="新增行程"><Icon name="plus" size={20} /></button>
       </header>
 
       <div className="pad" style={{ marginTop: 6 }}>
@@ -223,7 +223,7 @@ export default function ItineraryScreen() {
                       <span className="tl-dot" style={{ background: c.color }} />
                       {idx < items.length - 1 && <span className="tl-line" />}
                     </div>
-                    <div className="tl-card" style={{ borderLeftColor: c.color }} onClick={() => openItin(id, day, it.id)}>
+                    <div className="tl-card" style={{ borderLeftColor: c.color }} onClick={() => openItin(trip.id, day, it.id)}>
                       <div className="between">
                         <span className="tag" style={{ background: `color-mix(in srgb, ${c.color} 10%, transparent)`, color: c.color }}>
                           <Icon name={c.icon} size={12} /> {c.label}
@@ -272,7 +272,7 @@ export default function ItineraryScreen() {
           <button className="btn btn-ghost" style={{ flex: 1 }} onClick={copyDay} disabled={items.length === 0}>
             <Icon name="copy" size={17} /> 複製到隔天
           </button>
-          <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => openItin(id, day)}>
+          <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => openItin(trip.id, day)}>
             <Icon name="plus" size={18} /> 加行程
           </button>
         </div>

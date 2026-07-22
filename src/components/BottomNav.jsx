@@ -4,10 +4,12 @@ import Icon from './Icon'
 const TABS = [
   { key: 'home', label: '首頁', icon: 'home', path: '/' },
   { key: 'trips', label: '旅程', icon: 'map', path: '/trips' },
-  { key: 'map', label: '地圖', icon: 'route', path: '/map' },
+  { key: 'itin', label: '行程', icon: 'route', path: '/itinerary' },
   { key: 'expenses', label: '記帳', icon: 'wallet', path: '/expenses' },
   { key: 'profile', label: '我的', icon: 'user', path: '/profile' },
 ]
+
+const SUB = /^\/trip\/[^/]+\/(itinerary|expenses|map)/
 
 export default function BottomNav() {
   const nav = useNavigate()
@@ -15,15 +17,15 @@ export default function BottomNav() {
 
   const isActive = (t) => {
     if (t.path === '/') return pathname === '/'
-    if (t.key === 'map') return pathname === '/map' || /^\/trip\/[^/]+\/map/.test(pathname)
+    if (t.key === 'itin') return pathname === '/itinerary' || /^\/trip\/[^/]+\/itinerary/.test(pathname)
     if (t.key === 'expenses') return pathname === '/expenses' || /^\/trip\/[^/]+\/expenses/.test(pathname)
-    if (t.key === 'trips') return (pathname.startsWith('/trips') || pathname.startsWith('/trip/')) && !/^\/trip\/[^/]+\/(map|expenses)/.test(pathname)
+    if (t.key === 'trips') return (pathname.startsWith('/trips') || pathname.startsWith('/trip/')) && !SUB.test(pathname)
     return pathname.startsWith(t.path)
   }
 
   const tripId = pathname.match(/^\/trip\/([^/]+)/)?.[1]
   const targetOf = (t) => {
-    if (tripId && t.key === 'map') return `/trip/${tripId}/map`
+    if (tripId && t.key === 'itin') return `/trip/${tripId}/itinerary`
     if (tripId && t.key === 'expenses') return `/trip/${tripId}/expenses`
     return t.path
   }
