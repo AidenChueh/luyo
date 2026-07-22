@@ -32,7 +32,9 @@ export default function MapScreen() {
     if (view === 'all') return []
     const items = [...(itin[view] || [])].sort((a, b) => a.start.localeCompare(b.start))
     return items.map((it) => {
-      const match = places.find((p) => p.name === it.title || (it.loc && p.name === it.loc))
+      // 連動地點以 id 歸屬且有座標時優先採用；沒有連動地點或沒座標才退回原本的名稱比對
+      const linked = places.find((p) => p.id === `lnk-${it.id}`)
+      const match = linked && hasCoord(linked) ? linked : places.find((p) => p.name === it.title || (it.loc && p.name === it.loc))
       return { ...it, lat: match?.lat, lng: match?.lng }
     })
   }, [view, itin, places])

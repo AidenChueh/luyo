@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { expenses as seedExpenses, trips as seedTrips, prep as seedPrep, prepTemplate, itinerary as seedItin, places as seedPlaces, journal as seedJournal, flights as seedFlights, stays as seedStays, photos as seedPhotos, companions as seedCompanions, ITIN_TO_PLACE } from './data/seed'
 import { removeRecap, removePlan, removeBudgetAnalysis } from './lib/ai'
 import { parseGmaps } from './lib/gmaps'
@@ -78,6 +78,8 @@ export function StoreProvider({ children }) {
   const [compSheet, setCompSheet] = useState({ open: false, tripId: null, editId: null })
   // 自製確認彈窗：PWA/部分瀏覽器會擋掉原生 confirm()，導致刪除按鈕完全沒反應
   const [confirmState, setConfirmState] = useState({ open: false, message: '', confirmText: '刪除', onConfirm: null })
+  // 各連動地點最新一次 syncLinkedPlace 呼叫的序號，供過期的 geocode 回應自我作廢
+  const linkSeqRef = useRef({})
 
   useEffect(() => { persist(EXP_KEY, byTrip) }, [byTrip])
   useEffect(() => { persist(TRIP_KEY, tripData) }, [tripData])
@@ -261,12 +263,19 @@ export function StoreProvider({ children }) {
     // 複製出來的是各自獨立的行程，有實際花費就各自建立對應支出
     cloned.forEach((it) => {
       syncLinkedExpense(tripId, `lnk-${it.id}`, itinExpense(tripId, toDay, it))
-      syncLinkedPlace(tripId, it.id, it)
     })
+    // 逐一 await 而非平行觸發，避免一次複製多筆短網址時同時打出多個 Nominatim 請求
+    ;(async () => {
+      for (const it of cloned) {
+        await syncLinkedPlace(tripId, it.id, it)
+      }
+    })()
   }
 
   const syncLinkedPlace = async (tripId, itinId, it) => {
     const pid = `lnk-${itinId}`
+    // 記錄本次呼叫的序號；await 結束後若已被更新的呼叫（含刪除）蓋過，就放棄寫入，避免刪除後孤兒地點復活
+    const seq = (linkSeqRef.current[pid] = (linkSeqRef.current[pid] || 0) + 1)
     if (!it || !it.maps) {
       setPlaceByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).filter((p) => p.id !== pid) }))
       return
@@ -292,6 +301,7 @@ export function StoreProvider({ children }) {
         coord = null
       }
     }
+    if (linkSeqRef.current[pid] !== seq) return
     setPlaceByTrip((prev) => {
       const list = prev[tripId] || []
       const next = { ...fields, lat: coord?.lat, lng: coord?.lng }
@@ -307,7 +317,7 @@ export function StoreProvider({ children }) {
   // ---- 地點庫 ----
   const getPlaces = (tripId) => placeByTrip[tripId] || []
   const addPlace = (tripId, place) =>
-    setPlaceByTrip((prev) => ({ ...prev, [tripId]: [{ id: place.id || uid('pl'), ...place }, ...(prev[tripId] || [])] }))
+    setPlaceByTrip((prev) => ({ ...prev, [tripId]: [{ id: uid('pl'), ...place }, ...(prev[tripId] || [])] }))
   const editPlace = (tripId, placeId, patch) =>
     setPlaceByTrip((prev) => ({ ...prev, [tripId]: (prev[tripId] || []).map((p) => (p.id === placeId ? { ...p, ...patch } : p)) }))
   const removePlace = (tripId, placeId) =>
