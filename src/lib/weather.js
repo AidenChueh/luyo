@@ -1,3 +1,25 @@
+const WEATHER_KEY = 'luyo:weather:v1'
+const TTL = 60 * 60 * 1000
+
+const loadAll = () => {
+  try { return JSON.parse(localStorage.getItem(WEATHER_KEY) || '{}') } catch { return {} }
+}
+const saveOne = (tripId, value) => {
+  try {
+    const all = loadAll()
+    all[tripId] = value
+    localStorage.setItem(WEATHER_KEY, JSON.stringify(all))
+  } catch {}
+}
+
+export function removeWeather(tripId) {
+  try {
+    const all = loadAll()
+    delete all[tripId]
+    localStorage.setItem(WEATHER_KEY, JSON.stringify(all))
+  } catch {}
+}
+
 const CODE = {
   0: { cond: '晴', icon: 'sun' },
   1: { cond: '大致晴朗', icon: 'sun' },
@@ -31,4 +53,21 @@ export function shapeWeather(json, targetDate) {
   if (!c) return null
   const w = wmo(c.weather_code)
   return { tmp: Math.round(c.temperature_2m), cond: w.cond, hi: Math.round(d.temperature_2m_max[0]), lo: Math.round(d.temperature_2m_min[0]), icon: w.icon }
+}
+
+const ENDPOINT = 'https://api.open-meteo.com/v1/forecast'
+
+export async function getWeather(tripId, lat, lng, targetDate) {
+  const cached = loadAll()[tripId]
+  // 座標或目標日期變了就重抓，不只看時間
+  if (cached && Date.now() - cached.at < TTL && cached.lat === lat && cached.lng === lng && cached.targetDate === (targetDate || null)) {
+    return cached.data
+  }
+  const url = `${ENDPOINT}?latitude=${lat}&longitude=${lng}&current=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=16`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error('天氣服務暫時無法使用')
+  const json = await res.json()
+  const data = shapeWeather(json, targetDate)
+  saveOne(tripId, { at: Date.now(), lat, lng, targetDate: targetDate || null, data })
+  return data
 }
