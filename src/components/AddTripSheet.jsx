@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Icon from './Icon'
 import { useStore } from '../store'
-import { pickImage } from '../lib/image'
+import { useAuth } from '../auth'
+import { pickImage, uploadImage } from '../lib/image'
 import { getPrefs } from '../lib/settings'
 import { parseYMD, decimalInput } from '../lib/format'
 
@@ -42,6 +43,7 @@ const statusOf = (start, end) => {
 
 export default function AddTripSheet() {
   const { tripSheet, closeTripSheet, addTrip, editTrip, getTrip } = useStore()
+  const { user } = useAuth()
   const nav = useNavigate()
   const editing = tripSheet.editId
 
@@ -159,7 +161,7 @@ export default function AddTripSheet() {
         <div className="field">
           <label>封面照片（可選）</label>
           <div className="row" style={{ gap: 10 }}>
-            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(setCover)}>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(async (d) => { try { setCover(await uploadImage(user.id, d)) } catch { setCover(d) } })}>
               <Icon name="image" size={17} /> {cover ? '重新上傳' : '從裝置上傳'}
             </button>
             {cover && (

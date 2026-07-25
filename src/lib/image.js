@@ -28,3 +28,23 @@ export function pickImage(onResult, { max = 760, quality = 0.72, onError } = {})
   }
   input.click()
 }
+
+import { supabase } from './supabase'
+
+function dataUrlToBlob(dataUrl) {
+  const [head, b64] = dataUrl.split(',')
+  const mime = (head.match(/data:(.*?);/) || [])[1] || 'image/jpeg'
+  const bin = atob(b64)
+  const arr = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i)
+  return new Blob([arr], { type: mime })
+}
+
+export async function uploadImage(userId, dataUrl) {
+  const path = `${userId}/${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}.jpg`
+  const blob = dataUrlToBlob(dataUrl)
+  const { error } = await supabase.storage.from('photos').upload(path, blob, { contentType: 'image/jpeg', upsert: false })
+  if (error) throw error
+  const { data } = supabase.storage.from('photos').getPublicUrl(path)
+  return data.publicUrl
+}

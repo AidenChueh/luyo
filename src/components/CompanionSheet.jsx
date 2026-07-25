@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import Icon from './Icon'
 import { useStore } from '../store'
-import { pickImage } from '../lib/image'
+import { useAuth } from '../auth'
+import { pickImage, uploadImage } from '../lib/image'
 
 export default function CompanionSheet() {
   const { compSheet, closeCompanion, getCompanions, addCompanion, editCompanion, removeCompanion, askConfirm } = useStore()
+  const { user } = useAuth()
   const { open, tripId, editId } = compSheet
   const [name, setName] = useState('')
   const [contact, setContact] = useState('')
@@ -38,7 +40,7 @@ export default function CompanionSheet() {
         <div className="field" style={{ marginTop: 16 }}>
           <label>頭像</label>
           <div className="row" style={{ gap: 12 }}>
-            <button onClick={() => pickImage(setAvatar)} aria-label="上傳頭像" style={{ width: 56, height: 56, borderRadius: '50%', flex: 'none', background: avatar ? `center/cover url(${avatar})` : 'var(--sand)', color: 'var(--muted)', display: 'grid', placeItems: 'center', border: '1px solid var(--line)' }}>
+            <button onClick={() => pickImage(async (d) => { try { setAvatar(await uploadImage(user.id, d)) } catch { setAvatar(d) } })} aria-label="上傳頭像" style={{ width: 56, height: 56, borderRadius: '50%', flex: 'none', background: avatar ? `center/cover url(${avatar})` : 'var(--sand)', color: 'var(--muted)', display: 'grid', placeItems: 'center', border: '1px solid var(--line)' }}>
               {!avatar && <Icon name="image" size={20} />}
             </button>
             <span className="muted" style={{ fontSize: 12.5 }}>{avatar ? '點頭像可重新上傳' : '可上傳照片，留空用色塊'}</span>

@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react'
 import Icon from './Icon'
 import { useStore } from '../store'
 import { PLACE_TYPE, PLACE_TAG } from '../data/seed'
-import { pickImage } from '../lib/image'
+import { useAuth } from '../auth'
+import { pickImage, uploadImage } from '../lib/image'
 import { geocode } from '../lib/geocode'
 
 export default function PlaceSheet() {
   const { placeSheet, closePlace, getPlaces, addPlace, editPlace, removePlace, getTrip, askConfirm } = useStore()
+  const { user } = useAuth()
   const { open, tripId, editId } = placeSheet
 
   const [name, setName] = useState('')
@@ -140,7 +142,7 @@ export default function PlaceSheet() {
         <div className="field">
           <label>照片</label>
           <div className="row" style={{ gap: 10 }}>
-            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(setPhoto)}>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(async (d) => { try { setPhoto(await uploadImage(user.id, d)) } catch { setPhoto(d) } })}>
               <Icon name="image" size={17} /> {photo ? '重新上傳' : '從裝置上傳'}
             </button>
             {photo && (

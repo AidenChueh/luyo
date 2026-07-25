@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react'
 import Icon from './Icon'
 import { useStore } from '../store'
 import { PHOTO_GRADIENTS } from '../data/seed'
-import { pickImage } from '../lib/image'
+import { useAuth } from '../auth'
+import { pickImage, uploadImage } from '../lib/image'
 
 const ARS = ['1 / 1', '3 / 4', '4 / 5', '5 / 4', '3 / 5']
 
 export default function PhotoSheet() {
   const { photoSheet, closePhoto, addPhoto, getTrip } = useStore()
+  const { user } = useAuth()
   const { open, tripId } = photoSheet
   const trip = getTrip(tripId)
 
@@ -51,7 +53,7 @@ export default function PhotoSheet() {
         <div className="field">
           <label>照片</label>
           <div className="row" style={{ gap: 10 }}>
-            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(setUrl)}>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(async (d) => { try { setUrl(await uploadImage(user.id, d)) } catch { setUrl(d) } })}>
               <Icon name="image" size={17} /> {url ? '重新上傳' : '從裝置上傳'}
             </button>
             {url && (

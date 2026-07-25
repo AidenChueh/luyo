@@ -5,7 +5,7 @@ import { useAuth } from '../auth'
 import { getTheme, applyTheme } from '../lib/theme'
 import { getApiKey, setApiKey } from '../lib/ai'
 import { getProfile, setProfile, getPrefs, setPrefs, CURRENCY_OPTIONS } from '../lib/settings'
-import { pickImage } from '../lib/image'
+import { pickImage, uploadImage } from '../lib/image'
 
 const Group = ({ title, children }) => (
   <div className="pad section set-group">
@@ -18,7 +18,7 @@ const Toggle = ({ on }) => <span className={`toggle ${on ? 'on' : ''}`} aria-hid
 
 export default function StubScreen() {
   const { loadSample, askConfirm, requestSync } = useStore()
-  const { signOut } = useAuth()
+  const { signOut, user } = useAuth()
   const [installEvt, setInstallEvt] = useState(null)
   const [installed, setInstalled] = useState(false)
   const [theme, setTheme] = useState(getTheme())
@@ -77,7 +77,7 @@ export default function StubScreen() {
             <div style={{ flex: 1, minWidth: 0 }}>
               <input className="profile-name-input" value={draftName} onChange={(e) => setDraftName(e.target.value)} placeholder="你的名字" autoFocus />
               <div className="row" style={{ gap: 8, marginTop: 10 }}>
-                <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(setDraftAvatar)}><Icon name="image" size={16} /> 換頭像</button>
+                <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(async (d) => { try { setDraftAvatar(await uploadImage(user.id, d)) } catch { setDraftAvatar(d) } })}><Icon name="image" size={16} /> 換頭像</button>
                 {draftAvatar && <button className="btn btn-ghost" onClick={() => setDraftAvatar('')}>移除</button>}
               </div>
               <div className="row" style={{ gap: 8, marginTop: 8 }}>
@@ -163,7 +163,7 @@ export default function StubScreen() {
       <Group title="關於">
         <div className="set-row" style={{ cursor: 'default' }}>
           <span className="set-ic"><Icon name="sparkles" size={18} /></span>
-          <span className="set-label">luyo<span className="muted" style={{ fontWeight: 500, fontSize: 11.5, display: 'block' }}>個人旅遊規劃 · 原型 v1.30</span></span>
+          <span className="set-label">luyo<span className="muted" style={{ fontWeight: 500, fontSize: 11.5, display: 'block' }}>個人旅遊規劃 · 原型 v1.31</span></span>
         </div>
       </Group>
 

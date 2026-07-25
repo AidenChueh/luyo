@@ -3,12 +3,14 @@ import Icon from './Icon'
 import { useStore } from '../store'
 import { MOODS } from '../data/seed'
 import { renderMarkdown } from '../lib/markdown'
-import { pickImage } from '../lib/image'
+import { useAuth } from '../auth'
+import { pickImage, uploadImage } from '../lib/image'
 
 const TODAY = '2026-06-14'
 
 export default function JournalSheet() {
   const { journalSheet, closeJournal, getJournal, addJournal, editJournal, removeJournal, askConfirm } = useStore()
+  const { user } = useAuth()
   const { open, tripId, editId } = journalSheet
 
   const [date, setDate] = useState(TODAY)
@@ -82,7 +84,7 @@ export default function JournalSheet() {
         <div className="field">
           <label>照片（可選，一張）</label>
           <div className="row" style={{ gap: 10 }}>
-            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(setPhoto)}>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(async (d) => { try { setPhoto(await uploadImage(user.id, d)) } catch { setPhoto(d) } })}>
               <Icon name="image" size={17} /> {photo ? '重新上傳' : '從裝置上傳'}
             </button>
             {photo && (
