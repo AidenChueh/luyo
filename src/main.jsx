@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { HashRouter } from 'react-router-dom'
 import App from './App.jsx'
+import { AuthProvider } from './auth'
 import { StoreProvider } from './store.jsx'
 import { getTheme, applyTheme } from './lib/theme'
 import { refreshRates } from './lib/rates'
@@ -14,11 +15,13 @@ refreshRates()
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <StoreProvider>
-      <HashRouter>
-        <App />
-      </HashRouter>
-    </StoreProvider>
+    <AuthProvider>
+      <StoreProvider>
+        <HashRouter>
+          <App />
+        </HashRouter>
+      </StoreProvider>
+    </AuthProvider>
   </React.StrictMode>,
 )
 

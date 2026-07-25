@@ -1,4 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './auth'
+import { useStore } from './store'
+import AuthScreen from './screens/AuthScreen'
 import BottomNav from './components/BottomNav'
 import AddExpenseSheet from './components/AddExpenseSheet'
 import AddTripSheet from './components/AddTripSheet'
@@ -27,6 +30,13 @@ import CompanionsScreen from './screens/CompanionsScreen'
 import StubScreen from './screens/StubScreen'
 
 export default function App() {
+  const { session, loading } = useAuth()
+  const { ready } = useStore()
+
+  if (loading) return <div className="stage"><div className="app" /></div>
+  if (!session) return <AuthScreen />
+  if (ready === false) return <div className="stage"><div className="app" /></div>
+
   return (
     <div className="stage">
       <div className="app">
