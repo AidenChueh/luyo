@@ -92,7 +92,6 @@ export default function AddTripSheet() {
     const id = 'trip-' + Date.now()
     addTrip({
       id, cover: '', favorite: false, archived: false, spent: 0, companions: 1,
-      weather: { tmp: 24, cond: '—', hi: 26, lo: 18, icon: 'cloudSun' },
       stats: { doneItin: 0, places: 0, photos: 0 },
       ...fields,
     })

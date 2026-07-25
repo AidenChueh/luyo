@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Icon from '../components/Icon'
 import Cover from '../components/Cover'
@@ -6,6 +6,8 @@ import { useStore } from '../store'
 import { dateRange } from '../lib/format'
 import { getQuickOrder, setQuickOrder } from '../lib/settings'
 import { useDragSort } from '../lib/dragsort'
+import { getWeather } from '../lib/weather'
+import { geocode } from '../lib/geocode'
 
 const QUICK = [
   { key: 'itinerary', label: '行程', icon: 'calendar', color: 'var(--cat-sight)', bg: 'var(--primary-soft)' },
@@ -29,7 +31,7 @@ const orderedQuick = (order) => {
 export default function TripOverviewScreen() {
   const { id } = useParams()
   const nav = useNavigate()
-  const { getTrip, openTripSheet, deleteTrip, editTrip, askConfirm } = useStore()
+  const { getTrip, openTripSheet, deleteTrip, editTrip, askConfirm, getPlaces } = useStore()
   const [menu, setMenu] = useState(false)
   const [quick, setQuick] = useState(() => orderedQuick(getQuickOrder()))
   const drag = useDragSort(quick.map((q) => q.key), (order) => {
@@ -37,6 +39,40 @@ export default function TripOverviewScreen() {
     setQuickOrder(order)
   })
   const trip = getTrip(id)
+  const [weather, setWeather] = useState(null)
+  const [wxState, setWxState] = useState('loading') // loading | ok | far | error | nogeo
+
+  useEffect(() => {
+    if (!trip || trip.status === 'completed') return
+    let alive = true
+    setWxState('loading')
+    ;(async () => {
+      let lat = trip.lat, lng = trip.lng
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+        const p = getPlaces(trip.id).find((x) => Number.isFinite(x.lat) && Number.isFinite(x.lng))
+        if (p) { lat = p.lat; lng = p.lng }
+        else {
+          try {
+            const hit = await geocode(`${trip.city} ${trip.country}`.trim())
+            if (hit) { lat = hit.lat; lng = hit.lng }
+          } catch { /* 下面統一處理 */ }
+        }
+        if (Number.isFinite(lat) && Number.isFinite(lng)) editTrip(trip.id, { lat, lng })
+      }
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) { if (alive) setWxState('nogeo'); return }
+      try {
+        const target = trip.status === 'ongoing' ? null : trip.start
+        const data = await getWeather(trip.id, lat, lng, target)
+        if (!alive) return
+        if (data) { setWeather(data); setWxState('ok') }
+        else setWxState('far')
+      } catch {
+        if (alive) setWxState('error')
+      }
+    })()
+    return () => { alive = false }
+  }, [trip?.id, trip?.status, trip?.start, trip?.lat, trip?.lng])
+
   if (!trip) return null
 
   const doDelete = () => {
@@ -94,18 +130,37 @@ export default function TripOverviewScreen() {
         </div>
       </section>
 
-      <div className="pad section" style={{ marginTop: 18 }}>
-        <div className="weather-card">
-          <Icon name={trip.weather.icon === 'sun' ? 'sun' : trip.weather.icon === 'cloud' ? 'cloud' : 'cloudSun'} size={34} style={{ color: 'var(--amber)' }} />
-          <div>
-            <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
-              <span className="tmp">{trip.weather.tmp}°</span>
-              <span className="muted" style={{ fontSize: 13, fontWeight: 600 }}>{trip.weather.cond}</span>
+      {trip.status !== 'completed' && (
+        <div className="pad section" style={{ marginTop: 18 }}>
+          <div className="weather-card">
+            <Icon name={wxState === 'ok' ? weather.icon : 'cloudSun'} size={34} style={{ color: 'var(--amber)' }} />
+            <div>
+              {wxState === 'ok' ? (
+                <>
+                  <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
+                    <span className="tmp">{weather.tmp}°</span>
+                    <span className="muted" style={{ fontSize: 13, fontWeight: 600 }}>{weather.cond}</span>
+                  </div>
+                  <div className="muted" style={{ fontSize: 12 }}>最高 {weather.hi}° · 最低 {weather.lo}° · {trip.city}</div>
+                </>
+              ) : (
+                <>
+                  <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
+                    <span className="tmp">—</span>
+                    <span className="muted" style={{ fontSize: 13, fontWeight: 600 }}>
+                      {wxState === 'loading' ? '取得天氣中…'
+                        : wxState === 'far' ? '出發前兩週才有預報'
+                        : wxState === 'nogeo' ? '無法定位這個城市'
+                        : '天氣暫時取不到'}
+                    </span>
+                  </div>
+                  <div className="muted" style={{ fontSize: 12 }}>{trip.city}</div>
+                </>
+              )}
             </div>
-            <div className="muted" style={{ fontSize: 12 }}>最高 {trip.weather.hi}° · 最低 {trip.weather.lo}° · {trip.city}</div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Quick entries */}
       <div className="pad section">

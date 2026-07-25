@@ -49,7 +49,6 @@ export const trips = [
     budget: 250000,
     spent: 138400,
     companions: 2,
-    weather: { tmp: 27, cond: '多雲時晴', hi: 29, lo: 22, icon: 'cloud-sun' },
     stats: { doneItin: 11, places: 18, photos: 64 },
   },
   {
@@ -70,7 +69,6 @@ export const trips = [
     budget: 900000,
     spent: 120000,
     companions: 1,
-    weather: { tmp: 24, cond: '晴', hi: 26, lo: 18, icon: 'sun' },
     stats: { doneItin: 0, places: 7, photos: 0 },
   },
   {
@@ -91,7 +89,6 @@ export const trips = [
     budget: 3200,
     spent: 3010,
     companions: 3,
-    weather: { tmp: 26, cond: '晴朗', hi: 28, lo: 19, icon: 'sun' },
     stats: { doneItin: 14, places: 22, photos: 180 },
   },
 ]
