@@ -71,7 +71,7 @@ export default function TripOverviewScreen() {
       }
     })()
     return () => { alive = false }
-  }, [trip?.id, trip?.status, trip?.start, trip?.lat, trip?.lng])
+  }, [trip?.id, trip?.status, trip?.start])
 
   if (!trip) return null
 

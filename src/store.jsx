@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { expenses as seedExpenses, trips as seedTrips, prep as seedPrep, prepTemplate, itinerary as seedItin, places as seedPlaces, journal as seedJournal, flights as seedFlights, stays as seedStays, photos as seedPhotos, companions as seedCompanions, ITIN_TO_PLACE } from './data/seed'
 import { removeRecap, removePlan, removeBudgetAnalysis } from './lib/ai'
+import { removeWeather } from './lib/weather'
 import { parseGmaps } from './lib/gmaps'
 import { geocode } from './lib/geocode'
 
@@ -152,6 +153,7 @@ export function StoreProvider({ children }) {
     removeRecap(id)
     removePlan(id)
     removeBudgetAnalysis(id)
+    removeWeather(id)
   }
 
   const editExpense = (tripId, id, patch) =>

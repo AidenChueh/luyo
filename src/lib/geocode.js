@@ -1,4 +1,5 @@
-// OpenStreetMap Nominatim：免 API key。使用條款要求低頻率請求，故僅在使用者主動按「定位」時呼叫
+// OpenStreetMap Nominatim：免 API key。使用條款要求低頻率請求，故僅在使用者主動按「定位」、
+// 或旅程無座標時作為天氣功能的最後備援才自動呼叫；結果會快取並持久化以壓低請求量
 const ENDPOINT = 'https://nominatim.openstreetmap.org/search'
 
 const cache = new Map()
