@@ -385,3 +385,9 @@
 - 範圍：src/lib/weather.js、src/components/Icon.jsx、src/screens/TripOverviewScreen.jsx、src/data/seed.js、src/components/AddTripSheet.jsx、src/store.jsx、src/lib/geocode.js
 - 做了什麼：旅程總覽天氣卡改接 Open-Meteo 即時資料，進行中旅程顯示今天、規劃中顯示出發日、已完成不顯示；出發日超過 16 天顯示「出發前兩週才有預報」。座標依序取地點庫→trip→Nominatim 並存回 trip，1 小時 localStorage 快取。Icon 新增 rain/snow。移除 seed 與新增旅程寫死的 weather 假資料。刪除旅程時一併清天氣快取。
 - 為什麼：原本天氣卡是寫死的靜態佔位，跟城市日期無關
+
+## 2026-07-26 00:50
+- 版號：v1.31
+- 範圍：src/lib/image.js、src/components/AddTripSheet.jsx、CompanionSheet.jsx、JournalSheet.jsx、PhotoSheet.jsx、PlaceSheet.jsx、src/screens/StubScreen.jsx
+- 做了什麼：image.js 新增 uploadImage(userId, dataUrl)，把 pickImage 選到的圖片壓縮後上傳到 Supabase public Storage 的 photos bucket（路徑 userId/隨機檔名.jpg），回傳公開網址。六個上傳點（旅程封面、同行者頭像、日誌照片、旅程相簿照片、地點照片、個人頭像）改為呼叫 uploadImage 取代直接存 base64，上傳失敗則退回原本的 base64 dataURL。顯示端全部不動，因為存進去的值本來就是一般 https URL。FlightSheet 的機票截圖辨識用法（僅記憶體傳給 AI OCR，不落地）維持不變。
+- 為什麼：base64 直接塞 localStorage 容量有限也無法跨裝置同步，改存雲端 Storage 換公開 URL 才能之後接使用者跨裝置看到自己的照片
