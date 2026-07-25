@@ -31,12 +31,13 @@ const orderedQuick = (order) => {
 export default function TripOverviewScreen() {
   const { id } = useParams()
   const nav = useNavigate()
-  const { getTrip, openTripSheet, deleteTrip, editTrip, askConfirm, getPlaces } = useStore()
+  const { getTrip, openTripSheet, deleteTrip, editTrip, askConfirm, getPlaces, requestSync } = useStore()
   const [menu, setMenu] = useState(false)
   const [quick, setQuick] = useState(() => orderedQuick(getQuickOrder()))
   const drag = useDragSort(quick.map((q) => q.key), (order) => {
     setQuick(orderedQuick(order))
     setQuickOrder(order)
+    requestSync()
   })
   const trip = getTrip(id)
   const [weather, setWeather] = useState(null)

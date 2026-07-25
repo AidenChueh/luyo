@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import Icon from '../components/Icon'
 import { useStore } from '../store'
+import { useAuth } from '../auth'
 import { getTheme, applyTheme } from '../lib/theme'
 import { getApiKey, setApiKey } from '../lib/ai'
 import { getProfile, setProfile, getPrefs, setPrefs, CURRENCY_OPTIONS } from '../lib/settings'
@@ -16,7 +17,8 @@ const Group = ({ title, children }) => (
 const Toggle = ({ on }) => <span className={`toggle ${on ? 'on' : ''}`} aria-hidden="true"><i /></span>
 
 export default function StubScreen() {
-  const { loadSample, askConfirm } = useStore()
+  const { loadSample, askConfirm, requestSync } = useStore()
+  const { signOut } = useAuth()
   const [installEvt, setInstallEvt] = useState(null)
   const [installed, setInstalled] = useState(false)
   const [theme, setTheme] = useState(getTheme())
@@ -29,11 +31,11 @@ export default function StubScreen() {
   const startEdit = () => { setDraftName(profile.name); setDraftAvatar(profile.avatar); setEditing(true) }
   const saveProfile = () => {
     const next = { name: draftName.trim() || profile.name, avatar: draftAvatar }
-    setProfile(next); setProfileState((p) => ({ ...p, ...next })); setEditing(false)
+    setProfile(next); setProfileState((p) => ({ ...p, ...next })); setEditing(false); requestSync()
   }
 
   const [prefs, setPrefsState] = useState(getPrefs())
-  const updatePref = (patch) => { setPrefs(patch); setPrefsState((p) => ({ ...p, ...patch })) }
+  const updatePref = (patch) => { setPrefs(patch); setPrefsState((p) => ({ ...p, ...patch })); requestSync() }
 
   const [aiKey, setAiKey] = useState(getApiKey())
   const [keySaved, setKeySaved] = useState(!!getApiKey())
@@ -164,6 +166,12 @@ export default function StubScreen() {
           <span className="set-label">luyo<span className="muted" style={{ fontWeight: 500, fontSize: 11.5, display: 'block' }}>個人旅遊規劃 · 原型 v1.30</span></span>
         </div>
       </Group>
+
+      <div className="pad">
+        <button className="btn btn-block" style={{ marginTop: 10, color: 'var(--danger)' }} onClick={signOut}>
+          <Icon name="arrowUpRight" size={17} /> 登出
+        </button>
+      </div>
 
       <p className="pad muted" style={{ fontSize: 11.5, lineHeight: 1.6, paddingBottom: 8 }}>
         所有設定與資料僅存在這台裝置的瀏覽器，未上傳雲端。
