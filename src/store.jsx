@@ -158,7 +158,7 @@ export function StoreProvider({ children }) {
 
   // 自建旅程排前面，套用覆寫、濾掉已刪除
   const trips = useMemo(() => {
-    return [...tripData.custom, ...seedTrips]
+    return [...tripData.custom]
       .filter((t) => !tripData.deleted.includes(t.id))
       .map((t) => (tripData.overrides[t.id] ? { ...t, ...tripData.overrides[t.id] } : t))
   }, [tripData])
@@ -473,16 +473,9 @@ export function StoreProvider({ children }) {
     })
   }
 
-  const reset = () => {
-    try {
-      localStorage.removeItem(EXP_KEY); localStorage.removeItem(TRIP_KEY)
-      localStorage.removeItem(PREP_KEY); localStorage.removeItem(ITIN_KEY)
-      localStorage.removeItem(PLACE_KEY); localStorage.removeItem(JOURNAL_KEY)
-      localStorage.removeItem(FLIGHT_KEY); localStorage.removeItem(STAY_KEY)
-      localStorage.removeItem(PHOTO_KEY); localStorage.removeItem(COMP_KEY)
-    } catch {}
+  const loadSample = () => {
     setByTrip(seedExpState())
-    setTripData(emptyTripData())
+    setTripData({ custom: [...seedTrips], overrides: {}, deleted: [] })
     setPrepByTrip(seedPrepState())
     setItinByTrip(seedItinState())
     setPlaceByTrip(seedPlaceState())
@@ -491,6 +484,7 @@ export function StoreProvider({ children }) {
     setStayByTrip(seedStayState())
     setPhotoByTrip(seedPhotoState())
     setCompByTrip(seedCompState())
+    requestSync()
   }
 
   const openAdd = (tripId, editId = null) => setAdd({ open: true, tripId, editId })
@@ -500,7 +494,7 @@ export function StoreProvider({ children }) {
     () => ({
       ready, requestSync,
       trips, getTrip, addTrip, editTrip, deleteTrip, isCustom, toggleFav,
-      byTrip, addExpense, editExpense, removeExpense, getExpenses, getSpent, reset,
+      byTrip, addExpense, editExpense, removeExpense, getExpenses, getSpent, loadSample,
       getPrep, togglePrep, addPrep, removePrep, reorderPrep,
       getItinerary, addItin, editItin, removeItin, copyItinDay,
       getPlaces, addPlace, editPlace, removePlace,

@@ -16,7 +16,7 @@ const Group = ({ title, children }) => (
 const Toggle = ({ on }) => <span className={`toggle ${on ? 'on' : ''}`} aria-hidden="true"><i /></span>
 
 export default function StubScreen() {
-  const { reset, askConfirm } = useStore()
+  const { loadSample, askConfirm } = useStore()
   const [installEvt, setInstallEvt] = useState(null)
   const [installed, setInstalled] = useState(false)
   const [theme, setTheme] = useState(getTheme())
@@ -53,7 +53,7 @@ export default function StubScreen() {
   }, [])
 
   const doReset = () => {
-    askConfirm({ message: '重設為範例資料？目前在記帳新增的紀錄會被清除。', confirmText: '重設', onConfirm: reset })
+    askConfirm({ message: '載入範例資料？會覆蓋目前的旅程資料。', confirmText: '載入', onConfirm: loadSample })
   }
   const doInstall = async () => {
     if (!installEvt) { alert('此瀏覽器可從網址列 / 選單的「安裝」或「加入主畫面」安裝。'); return }
@@ -154,7 +154,7 @@ export default function StubScreen() {
         )}
         <button className="set-row" onClick={doReset}>
           <span className="set-ic" style={{ color: 'var(--danger)' }}><Icon name="copy" size={18} /></span>
-          <span className="set-label" style={{ color: 'var(--danger)' }}>重設為範例資料</span>
+          <span className="set-label" style={{ color: 'var(--danger)' }}>載入範例資料</span>
         </button>
       </Group>
 
