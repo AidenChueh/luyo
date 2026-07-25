@@ -31,6 +31,10 @@ export const setPrefs = (patch) => {
   try { localStorage.setItem(PREFS_KEY, JSON.stringify({ ...getPrefs(), ...patch })) } catch {}
 }
 
+export const resetProfile = () => { try { localStorage.setItem(PROFILE_KEY, JSON.stringify(DEFAULT_PROFILE)) } catch {} }
+export const resetPrefs = () => { try { localStorage.setItem(PREFS_KEY, JSON.stringify(DEFAULT_PREFS)) } catch {} }
+export const clearQuickOrder = () => { try { localStorage.removeItem(QUICK_KEY) } catch {} }
+
 // 存 key 陣列而非索引，之後增刪入口時舊資料仍可用
 export const getQuickOrder = () => {
   try {

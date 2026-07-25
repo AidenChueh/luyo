@@ -6,20 +6,10 @@ import { parseGmaps } from './lib/gmaps'
 import { geocode } from './lib/geocode'
 import { useAuth } from './auth'
 import { fetchState, pushState } from './lib/cloud'
-import { packState, unpackState, collectLocalCustom } from './lib/migrate'
-import { getProfile, setProfile, getPrefs, setPrefs, getQuickOrder, setQuickOrder } from './lib/settings'
+import { packState, unpackState, collectLocalCustom, clearLegacy } from './lib/migrate'
+import { getProfile, setProfile, getPrefs, setPrefs, getQuickOrder, setQuickOrder, resetProfile, resetPrefs, clearQuickOrder } from './lib/settings'
 
 const StoreCtx = createContext(null)
-const EXP_KEY = 'luyo:expenses:v1'
-const COMP_KEY = 'luyo:companions:v1'
-const TRIP_KEY = 'luyo:trips:v2'
-const PREP_KEY = 'luyo:prep:v1'
-const ITIN_KEY = 'luyo:itinerary:v1'
-const PLACE_KEY = 'luyo:places:v1'
-const JOURNAL_KEY = 'luyo:journal:v1'
-const FLIGHT_KEY = 'luyo:flights:v1'
-const STAY_KEY = 'luyo:stays:v1'
-const PHOTO_KEY = 'luyo:photos:v1'
 
 const seedExpState = () => {
   const init = {}
@@ -37,29 +27,9 @@ const seedCompState = () => JSON.parse(JSON.stringify(seedCompanions))
 // 自建旅程 + 種子旅程的覆寫 / 刪除（種子陣列本身不可變，故用 overrides/deleted）
 const emptyTripData = () => ({ custom: [], overrides: {}, deleted: [] })
 
-const load = (key, fallback) => {
-  try {
-    const raw = localStorage.getItem(key)
-    if (raw) return JSON.parse(raw)
-  } catch {
-    // 解析失敗 → 回 fallback
-  }
-  return fallback()
-}
-
 const uid = (prefix) => prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6)
 
 let storageWarned = false
-const persist = (key, value) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    if (!storageWarned) {
-      storageWarned = true
-      alert('儲存空間已滿，最近的變更可能不會被保存')
-    }
-  }
-}
 
 export function StoreProvider({ children }) {
   const [byTrip, setByTrip] = useState({})
@@ -99,9 +69,9 @@ export function StoreProvider({ children }) {
     setByTrip(s.expenses); setTripData(s.trips); setPrepByTrip(s.prep); setItinByTrip(s.itinerary)
     setPlaceByTrip(s.places); setJournalByTrip(s.journal); setFlightByTrip(s.flights)
     setStayByTrip(s.stays); setPhotoByTrip(s.photos); setCompByTrip(s.companions)
-    if (s.profile) setProfile(s.profile)
-    if (s.prefs) setPrefs(s.prefs)
-    if (s.quickorder != null) setQuickOrder(s.quickorder)
+    if (s.profile) setProfile(s.profile); else resetProfile()
+    if (s.prefs) setPrefs(s.prefs); else resetPrefs()
+    if (s.quickorder != null) setQuickOrder(s.quickorder); else clearQuickOrder()
   }
 
   // 登入後載入雲端；沒這帳號的列 → 跑首登遷移並上雲
@@ -130,6 +100,8 @@ export function StoreProvider({ children }) {
         const migrated = collectLocalCustom((k) => localStorage.getItem(k))
         data = migrated || emptyBlob
         try { await pushState(userId, data) } catch {}
+        // 遷移只做一次：清掉舊的 pre-auth 全域 localStorage，避免同裝置下一個帳號又撿到同一份資料
+        clearLegacy((k) => { try { localStorage.removeItem(k) } catch {} })
       }
       applyBlob(data || emptyBlob)
       if (data != null) { try { localStorage.setItem(cacheKey, JSON.stringify(data)) } catch {} }

@@ -89,7 +89,7 @@ export default function StubScreen() {
             <>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="profile-name">{profile.name}</div>
-                <div className="muted" style={{ fontSize: 12.5 }}>個人資料 · 本機儲存</div>
+                <div className="muted" style={{ fontSize: 12.5 }}>個人資料 · 已同步雲端</div>
               </div>
               <button className="iconbtn ghost" onClick={startEdit} aria-label="編輯個人資料"><Icon name="dots" size={18} /></button>
             </>
@@ -163,7 +163,7 @@ export default function StubScreen() {
       <Group title="關於">
         <div className="set-row" style={{ cursor: 'default' }}>
           <span className="set-ic"><Icon name="sparkles" size={18} /></span>
-          <span className="set-label">luyo<span className="muted" style={{ fontWeight: 500, fontSize: 11.5, display: 'block' }}>個人旅遊規劃 · 原型 v1.30</span></span>
+          <span className="set-label">luyo<span className="muted" style={{ fontWeight: 500, fontSize: 11.5, display: 'block' }}>個人旅遊規劃 · 原型 v1.31</span></span>
         </div>
       </Group>
 
@@ -174,7 +174,7 @@ export default function StubScreen() {
       </div>
 
       <p className="pad muted" style={{ fontSize: 11.5, lineHeight: 1.6, paddingBottom: 8 }}>
-        所有設定與資料僅存在這台裝置的瀏覽器，未上傳雲端。
+        資料已同步到你的雲端帳號，換裝置登入也看得到。
       </p>
     </div>
   )

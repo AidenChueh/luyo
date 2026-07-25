@@ -55,3 +55,7 @@ export function collectLocalCustom(readKey) {
   slices.quickorder = parse(readKey(KEY.quickorder), null)
   return packState(slices)
 }
+
+export function clearLegacy(removeKey) {
+  for (const k of Object.values(KEY)) removeKey(k)
+}

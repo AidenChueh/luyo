@@ -385,3 +385,9 @@
 - 範圍：src/lib/weather.js、src/components/Icon.jsx、src/screens/TripOverviewScreen.jsx、src/data/seed.js、src/components/AddTripSheet.jsx、src/store.jsx、src/lib/geocode.js
 - 做了什麼：旅程總覽天氣卡改接 Open-Meteo 即時資料，進行中旅程顯示今天、規劃中顯示出發日、已完成不顯示；出發日超過 16 天顯示「出發前兩週才有預報」。座標依序取地點庫→trip→Nominatim 並存回 trip，1 小時 localStorage 快取。Icon 新增 rain/snow。移除 seed 與新增旅程寫死的 weather 假資料。刪除旅程時一併清天氣快取。
 - 為什麼：原本天氣卡是寫死的靜態佔位，跟城市日期無關
+
+## 2026-07-26 01:16
+- 版號：v1.31
+- 範圍：src/lib/settings.js、src/store.jsx、src/lib/migrate.js、src/screens/StubScreen.jsx
+- 做了什麼：修登入/雲端同步 code review 的三項發現。(1) settings.js 新增 resetProfile/resetPrefs/clearQuickOrder；store.jsx 的 applyBlob 載入雲端 blob 時，profile/prefs/quickorder 若該欄位為空一律重設為預設值而非沿用舊帳號殘留，避免同裝置換帳號登入時看到上一個帳號的名字/頭像/幣別，下一次自動上雲也不會把它寫進新帳號的雲端資料。(2) migrate.js 新增 clearLegacy；store.jsx 在確認雲端無此帳號、完成首登遷移並 pushState 後，清掉舊版 pre-auth 全域 localStorage 13 個 key，讓同裝置的下一個帳號不會重複撿到同一份舊資料當自己的首登內容。(3) StubScreen 兩處已過時的「本機儲存 / 未上傳雲端」文案改為「已同步雲端」。順手清掉 store.jsx 內因先前任務已無呼叫端的 load/persist 函式與 10 個舊版 per-key localStorage key 常數（EXP_KEY 等），逐一 grep 確認唯一參照為自身定義後刪除。
+- 為什麼：修 code review 發現的帳號資料污染與死碼
