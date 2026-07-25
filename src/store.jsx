@@ -4,6 +4,10 @@ import { removeRecap, removePlan, removeBudgetAnalysis } from './lib/ai'
 import { removeWeather } from './lib/weather'
 import { parseGmaps } from './lib/gmaps'
 import { geocode } from './lib/geocode'
+import { useAuth } from './auth'
+import { fetchState, pushState } from './lib/cloud'
+import { packState, unpackState, collectLocalCustom } from './lib/migrate'
+import { getProfile, setProfile, getPrefs, setPrefs, getQuickOrder, setQuickOrder } from './lib/settings'
 
 const StoreCtx = createContext(null)
 const EXP_KEY = 'luyo:expenses:v1'
@@ -58,16 +62,17 @@ const persist = (key, value) => {
 }
 
 export function StoreProvider({ children }) {
-  const [byTrip, setByTrip] = useState(() => load(EXP_KEY, seedExpState))
-  const [tripData, setTripData] = useState(() => load(TRIP_KEY, emptyTripData))
-  const [prepByTrip, setPrepByTrip] = useState(() => load(PREP_KEY, seedPrepState))
-  const [itinByTrip, setItinByTrip] = useState(() => load(ITIN_KEY, seedItinState))
-  const [placeByTrip, setPlaceByTrip] = useState(() => load(PLACE_KEY, seedPlaceState))
-  const [journalByTrip, setJournalByTrip] = useState(() => load(JOURNAL_KEY, seedJournalState))
-  const [flightByTrip, setFlightByTrip] = useState(() => load(FLIGHT_KEY, seedFlightState))
-  const [stayByTrip, setStayByTrip] = useState(() => load(STAY_KEY, seedStayState))
-  const [photoByTrip, setPhotoByTrip] = useState(() => load(PHOTO_KEY, seedPhotoState))
-  const [compByTrip, setCompByTrip] = useState(() => load(COMP_KEY, seedCompState))
+  const [byTrip, setByTrip] = useState({})
+  const [tripData, setTripData] = useState(emptyTripData)
+  const [prepByTrip, setPrepByTrip] = useState({})
+  const [itinByTrip, setItinByTrip] = useState({})
+  const [placeByTrip, setPlaceByTrip] = useState({})
+  const [journalByTrip, setJournalByTrip] = useState({})
+  const [flightByTrip, setFlightByTrip] = useState({})
+  const [stayByTrip, setStayByTrip] = useState({})
+  const [photoByTrip, setPhotoByTrip] = useState({})
+  const [compByTrip, setCompByTrip] = useState({})
+  const [ready, setReady] = useState(false)
   const [add, setAdd] = useState({ open: false, tripId: null, editId: null })
   const [tripSheet, setTripSheet] = useState({ open: false, editId: null })
   const [itinSheet, setItinSheet] = useState({ open: false, tripId: null, day: 1, editId: null, prefill: null })
@@ -82,16 +87,69 @@ export function StoreProvider({ children }) {
   // 各連動地點最新一次 syncLinkedPlace 呼叫的序號，供過期的 geocode 回應自我作廢
   const linkSeqRef = useRef({})
 
-  useEffect(() => { persist(EXP_KEY, byTrip) }, [byTrip])
-  useEffect(() => { persist(TRIP_KEY, tripData) }, [tripData])
-  useEffect(() => { persist(PREP_KEY, prepByTrip) }, [prepByTrip])
-  useEffect(() => { persist(ITIN_KEY, itinByTrip) }, [itinByTrip])
-  useEffect(() => { persist(PLACE_KEY, placeByTrip) }, [placeByTrip])
-  useEffect(() => { persist(JOURNAL_KEY, journalByTrip) }, [journalByTrip])
-  useEffect(() => { persist(FLIGHT_KEY, flightByTrip) }, [flightByTrip])
-  useEffect(() => { persist(STAY_KEY, stayByTrip) }, [stayByTrip])
-  useEffect(() => { persist(PHOTO_KEY, photoByTrip) }, [photoByTrip])
-  useEffect(() => { persist(COMP_KEY, compByTrip) }, [compByTrip])
+  const { user } = useAuth()
+  const userId = user?.id || null
+  const cacheKey = userId ? `luyo:cache:${userId}` : null
+  const [syncTick, setSyncTick] = useState(0)
+  const requestSync = () => setSyncTick((n) => n + 1)
+  const loadedRef = useRef(false)
+
+  const applyBlob = (data) => {
+    const s = unpackState(data)
+    setByTrip(s.expenses); setTripData(s.trips); setPrepByTrip(s.prep); setItinByTrip(s.itinerary)
+    setPlaceByTrip(s.places); setJournalByTrip(s.journal); setFlightByTrip(s.flights)
+    setStayByTrip(s.stays); setPhotoByTrip(s.photos); setCompByTrip(s.companions)
+    if (s.profile) setProfile(s.profile)
+    if (s.prefs) setPrefs(s.prefs)
+    if (s.quickorder != null) setQuickOrder(s.quickorder)
+  }
+
+  // 登入後載入雲端；沒這帳號的列 → 跑首登遷移並上雲
+  useEffect(() => {
+    if (!userId) { loadedRef.current = false; setReady(false); return }
+    let alive = true
+    setReady(false)
+    ;(async () => {
+      let data = null
+      try {
+        data = await fetchState(userId)
+      } catch {
+        try { data = JSON.parse(localStorage.getItem(cacheKey) || 'null') } catch { data = null }
+      }
+      if (!alive) return
+      if (data == null) {
+        const migrated = collectLocalCustom((k) => localStorage.getItem(k))
+        data = migrated || packState({
+          expenses: {}, trips: emptyTripData(), prep: {}, itinerary: {}, places: {}, journal: {},
+          flights: {}, stays: {}, photos: {}, companions: {},
+          profile: getProfile(), prefs: getPrefs(), quickorder: getQuickOrder(),
+        })
+        try { await pushState(userId, data) } catch {}
+      }
+      applyBlob(data)
+      try { localStorage.setItem(cacheKey, JSON.stringify(data)) } catch {}
+      loadedRef.current = true
+      setReady(true)
+    })()
+    return () => { alive = false }
+  }, [userId])
+
+  // 變更 → debounce 打包整包上雲 + 寫本機快取。載入完成前不觸發，避免把空狀態蓋掉雲端
+  useEffect(() => {
+    if (!userId || !loadedRef.current) return
+    const blob = packState({
+      expenses: byTrip, trips: tripData, prep: prepByTrip, itinerary: itinByTrip, places: placeByTrip,
+      journal: journalByTrip, flights: flightByTrip, stays: stayByTrip, photos: photoByTrip, companions: compByTrip,
+      profile: getProfile(), prefs: getPrefs(), quickorder: getQuickOrder(),
+    })
+    const t = setTimeout(() => {
+      try { localStorage.setItem(cacheKey, JSON.stringify(blob)) } catch {}
+      pushState(userId, blob).catch(() => {
+        if (!storageWarned) { storageWarned = true; alert('雲端同步暫時失敗，變更已存在本機，稍後會自動重試') }
+      })
+    }, 1000)
+    return () => clearTimeout(t)
+  }, [byTrip, tripData, prepByTrip, itinByTrip, placeByTrip, journalByTrip, flightByTrip, stayByTrip, photoByTrip, compByTrip, syncTick, userId])
 
   // 自建旅程排前面，套用覆寫、濾掉已刪除
   const trips = useMemo(() => {
@@ -435,6 +493,7 @@ export function StoreProvider({ children }) {
 
   const value = useMemo(
     () => ({
+      ready, requestSync,
       trips, getTrip, addTrip, editTrip, deleteTrip, isCustom, toggleFav,
       byTrip, addExpense, editExpense, removeExpense, getExpenses, getSpent, reset,
       getPrep, togglePrep, addPrep, removePrep, reorderPrep,
@@ -474,7 +533,7 @@ export function StoreProvider({ children }) {
       askConfirm: (opts) => setConfirmState({ open: true, message: '', confirmText: '刪除', ...opts }),
       closeConfirm: () => setConfirmState((s) => ({ ...s, open: false })),
     }),
-    [byTrip, tripData, prepByTrip, itinByTrip, placeByTrip, journalByTrip, flightByTrip, stayByTrip, photoByTrip, compByTrip, add, tripSheet, itinSheet, placeSheet, journalSheet, flightSheet, staySheet, photoSheet, compSheet, confirmState],
+    [ready, byTrip, tripData, prepByTrip, itinByTrip, placeByTrip, journalByTrip, flightByTrip, stayByTrip, photoByTrip, compByTrip, add, tripSheet, itinSheet, placeSheet, journalSheet, flightSheet, staySheet, photoSheet, compSheet, confirmState],
   )
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>
 }
