@@ -379,3 +379,9 @@
 - 範圍：src/components/BottomNav.jsx、src/App.jsx、src/screens/ItineraryScreen.jsx、src/screens/PlacesScreen.jsx、src/screens/MapScreen.jsx、src/store.jsx、src/data/seed.js、src/lib/gmaps.js
 - 做了什麼：底部導航「地圖」tab 改為「行程」，新增全域 /itinerary 路由，行程頁無 tripId 時退回進行中的旅程；地圖頁改為亮「旅程」tab，仍從旅程總覽九宮格進入。新增 gmaps.js 解析 Google Maps 網址座標（@lat,lng、!3d!4d、?q=/ll=/query=）。行程項目填了 Google Maps 連結時自動在地點庫建立託管地點（id 前綴 lnk-）並顯示在地圖上；行程改動、清空連結或刪除時同步更新／移除。短網址不含座標，退回用行程標題查 Nominatim。地點庫的託管地點標示「來自行程」，點擊導回行程頁，不可手動編輯。
 - 為什麼：行程規劃是最常用的頁面，值得佔一個 tab；行程與地點庫原本各自為政，填了地圖連結卻不會反映到地圖上
+
+## 2026-07-25 21:21
+- 版號：v1.30
+- 範圍：src/lib/weather.js、src/components/Icon.jsx、src/screens/TripOverviewScreen.jsx、src/data/seed.js、src/components/AddTripSheet.jsx、src/store.jsx、src/lib/geocode.js
+- 做了什麼：旅程總覽天氣卡改接 Open-Meteo 即時資料，進行中旅程顯示今天、規劃中顯示出發日、已完成不顯示；出發日超過 16 天顯示「出發前兩週才有預報」。座標依序取地點庫→trip→Nominatim 並存回 trip，1 小時 localStorage 快取。Icon 新增 rain/snow。移除 seed 與新增旅程寫死的 weather 假資料。刪除旅程時一併清天氣快取。
+- 為什麼：原本天氣卡是寫死的靜態佔位，跟城市日期無關
