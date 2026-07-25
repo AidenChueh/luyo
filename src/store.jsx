@@ -106,28 +106,33 @@ export function StoreProvider({ children }) {
 
   // 登入後載入雲端；沒這帳號的列 → 跑首登遷移並上雲
   useEffect(() => {
-    if (!userId) { loadedRef.current = false; setReady(false); return }
-    let alive = true
+    loadedRef.current = false
     setReady(false)
+    if (!userId) return
+    let alive = true
     ;(async () => {
+      const emptyBlob = packState({
+        expenses: {}, trips: emptyTripData(), prep: {}, itinerary: {}, places: {}, journal: {},
+        flights: {}, stays: {}, photos: {}, companions: {},
+        profile: getProfile(), prefs: getPrefs(), quickorder: getQuickOrder(),
+      })
       let data = null
+      let fetched = false
       try {
         data = await fetchState(userId)
+        fetched = true
       } catch {
         try { data = JSON.parse(localStorage.getItem(cacheKey) || 'null') } catch { data = null }
       }
       if (!alive) return
-      if (data == null) {
+      if (fetched && data == null) {
+        // 只有確定雲端沒有這帳號的列（而非抓取失敗）才視為首次登入，避免網路瞬斷把既有資料蓋成空的
         const migrated = collectLocalCustom((k) => localStorage.getItem(k))
-        data = migrated || packState({
-          expenses: {}, trips: emptyTripData(), prep: {}, itinerary: {}, places: {}, journal: {},
-          flights: {}, stays: {}, photos: {}, companions: {},
-          profile: getProfile(), prefs: getPrefs(), quickorder: getQuickOrder(),
-        })
+        data = migrated || emptyBlob
         try { await pushState(userId, data) } catch {}
       }
-      applyBlob(data)
-      try { localStorage.setItem(cacheKey, JSON.stringify(data)) } catch {}
+      applyBlob(data || emptyBlob)
+      if (data != null) { try { localStorage.setItem(cacheKey, JSON.stringify(data)) } catch {} }
       loadedRef.current = true
       setReady(true)
     })()
