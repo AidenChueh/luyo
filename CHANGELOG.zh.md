@@ -397,3 +397,9 @@
 - 範圍：src/styles/global.css、src/screens/AuthScreen.jsx
 - 做了什麼：修登入頁兩個 UI 問題。(1) Email 輸入框只有約 1/3 寬：`.field input` 的寬度樣式 selector 列了 text/date/time/password 卻漏掉 email，補上 `[type="email"]` 後 email 與密碼欄同寬同樣式。(2) status bar / safe-area 透出較深的底色：頁面底是 --bg(#FBF8F4)，但登入頁外層 .stage 用的是 --canvas(#EFE7DB) 上的 device-frame 漸層（偏深）。AuthScreen 的 .stage 加 auth-stage class，手機（<480px）時 .stage.auth-stage 底色改 --bg，讓 status bar 區與頁面同色；桌機 ≥480px 維持原本裝置外框漸層不動。
 - 為什麼：使用者回報登入頁 email 欄寬度不一致、頂端 status bar 有一條較深的色塊
+
+## 2026-07-26 07:37
+- 版號：v1.33
+- 範圍：src/components/RangeCalendar.jsx（新）、src/components/AddTripSheet.jsx、src/styles/global.css
+- 做了什麼：新增旅程表單改用自製「日期範圍」日曆。原本開始日/結束日是兩個 `<input type="date">`，在 iOS 上各自跳原生單日 picker，無法一次選一段。新增 RangeCalendar 元件（沿用 sheet-overlay/sheet 底層、暖色系與 16px 圓角、endpoints 用 --primary 實心圓、範圍內用 --primary-soft 淺底帶，跨行/跨月仍連續）。互動：第一次點設開始日；第二次點若不早於開始日設結束日、若更早則改設為新開始日並清空結束日；第三次點（已選滿一段）重新開一段；兩端都選才能按「完成」，「重設」清空兩端。開始日/結束日欄改為 .date-pick 按鈕，點任一個都開同一個日曆並回填兩欄；沿用既有 YYYY-MM-DD 格式，故 submit 與天數計算不變；重開日曆會顯示先前選取的範圍（含定位到開始日所在月份）。其他頁面的日期欄（記帳/日誌/機票/住宿）維持原生 date input 不動。
+- 為什麼：使用者回報新增旅程的日曆像單日選取，無法清楚一次選開始與結束日，要求改為單一「日期範圍」選取並回填兩個欄位

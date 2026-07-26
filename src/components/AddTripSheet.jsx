@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Icon from './Icon'
+import RangeCalendar from './RangeCalendar'
 import { useStore } from '../store'
 import { useAuth } from '../auth'
 import { pickImage, uploadImage } from '../lib/image'
@@ -33,6 +34,7 @@ const addDays = (s, n) => {
   return ymd(d)
 }
 const diffDays = (a, b) => Math.round((parseYMD(b) - parseYMD(a)) / 86400000) + 1
+const fmtDate = (s) => { const d = parseYMD(s); return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}` }
 
 const statusOf = (start, end) => {
   const today = parseYMD(TODAY)
@@ -56,6 +58,7 @@ export default function AddTripSheet() {
   const [budget, setBudget] = useState('')
   const [grad, setGrad] = useState(GRADIENTS[0])
   const [cover, setCover] = useState('')
+  const [calOpen, setCalOpen] = useState(false)
 
   useEffect(() => {
     if (!tripSheet.open) return
@@ -102,6 +105,7 @@ export default function AddTripSheet() {
   }
 
   return (
+    <>
     <div className="sheet-overlay" onClick={closeTripSheet}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <div className="grabber" />
@@ -130,11 +134,15 @@ export default function AddTripSheet() {
         <div className="row date-row" style={{ gap: 12 }}>
           <div className="field" style={{ flex: 1 }}>
             <label>開始日</label>
-            <input type="date" value={start} onChange={(e) => { setStart(e.target.value); if (new Date(e.target.value) > new Date(end)) setEnd(e.target.value) }} />
+            <button type="button" className="date-pick" onClick={() => setCalOpen(true)}>
+              <Icon name="calendar" size={16} className="di" /> {fmtDate(start)}
+            </button>
           </div>
           <div className="field" style={{ flex: 1 }}>
             <label>結束日</label>
-            <input type="date" value={end} min={start} onChange={(e) => setEnd(e.target.value)} />
+            <button type="button" className="date-pick" onClick={() => setCalOpen(true)}>
+              <Icon name="calendar" size={16} className="di" /> {fmtDate(end)}
+            </button>
           </div>
         </div>
         <div className="muted" style={{ fontSize: 12.5, fontWeight: 600, marginTop: 8 }}>
@@ -194,5 +202,13 @@ export default function AddTripSheet() {
         </button>
       </div>
     </div>
+    <RangeCalendar
+      open={calOpen}
+      start={start}
+      end={end}
+      onClose={() => setCalOpen(false)}
+      onApply={(s, en) => { setStart(s); setEnd(en) }}
+    />
+    </>
   )
 }
