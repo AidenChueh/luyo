@@ -409,3 +409,9 @@
 - 範圍：src/components/AddExpenseSheet.jsx
 - 做了什麼：記帳金額鍵盤支援小數點、移除「00」鍵。KEYS 的 '00' 換成 '.'；輸入邏輯：'.' 最多一個（從空白按會補成 '0.'）、小數最多兩位、避免前導 0、總位數上限維持 9。金額顯示改用 fmtAmt（整數部加千分位、小數部照打的原樣保留，輸入中的結尾小數點也會顯示）。submit 仍以 Number(amt) 存，故 0.5 這類金額能正確記錄。
 - 為什麼：使用者要求記帳可以輸入小數點、不要「00」按鈕
+
+## 2026-07-26 08:33
+- 版號：v1.35
+- 範圍：src/components/StaySheet.jsx
+- 做了什麼：住宿的入住/退房日期改用 RangeCalendar 區間選取（複用 v1.33 的元件）。原本兩個 `<input type="date">` 換成 .date-pick 按鈕，點任一個都開同一個範圍日曆，回填 checkin/checkout 兩欄；未選時顯示「選擇入住日／選擇退房日」placeholder。沿用 YYYY-MM-DD 格式，submit 不變。
+- 為什麼：使用者要求入住-退房日期也改成區間選擇

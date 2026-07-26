@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
 import Icon from './Icon'
+import RangeCalendar from './RangeCalendar'
 import { useStore } from '../store'
 import { decimalInput } from '../lib/format'
+
+const fmtDate = (s) => (s ? s.replace(/-/g, '/') : '')
 
 export default function StaySheet() {
   const { staySheet, closeStay, getStays, addStay, editStay, removeStay, askConfirm } = useStore()
   const { open, tripId, editId } = staySheet
   const [v, setV] = useState({})
+  const [calOpen, setCalOpen] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -26,6 +30,7 @@ export default function StaySheet() {
   const del = () => askConfirm({ message: '刪除這筆住宿？', onConfirm: () => { removeStay(tripId, editId); closeStay() } })
 
   return (
+    <>
     <div className="sheet-overlay" onClick={closeStay}>
       <div className="sheet" onClick={(e) => e.stopPropagation()}>
         <div className="grabber" />
@@ -42,8 +47,18 @@ export default function StaySheet() {
           <div className="field" style={{ flex: 1 }}><label>訂房編號</label><input type="text" value={v.bookingNo || ''} onChange={set('bookingNo')} placeholder="BK-..." /></div>
         </div>
         <div className="row date-row" style={{ gap: 12 }}>
-          <div className="field" style={{ flex: 1 }}><label>入住</label><input type="date" value={v.checkin || ''} onChange={set('checkin')} /></div>
-          <div className="field" style={{ flex: 1 }}><label>退房</label><input type="date" value={v.checkout || ''} onChange={set('checkout')} /></div>
+          <div className="field" style={{ flex: 1 }}>
+            <label>入住</label>
+            <button type="button" className={`date-pick${v.checkin ? '' : ' placeholder'}`} onClick={() => setCalOpen(true)}>
+              <Icon name="calendar" size={16} className="di" /> {v.checkin ? fmtDate(v.checkin) : '選擇入住日'}
+            </button>
+          </div>
+          <div className="field" style={{ flex: 1 }}>
+            <label>退房</label>
+            <button type="button" className={`date-pick${v.checkout ? '' : ' placeholder'}`} onClick={() => setCalOpen(true)}>
+              <Icon name="calendar" size={16} className="di" /> {v.checkout ? fmtDate(v.checkout) : '選擇退房日'}
+            </button>
+          </div>
         </div>
         <div className="field"><label>價格（會同步到記帳）</label><input type="text" inputMode="decimal" value={v.price ?? ''} onChange={(e) => setV((p) => ({ ...p, price: decimalInput(e.target.value) }))} placeholder="0" /></div>
         <div className="field"><label>官網連結</label><input type="text" value={v.url || ''} onChange={set('url')} placeholder="https://..." /></div>
@@ -54,5 +69,13 @@ export default function StaySheet() {
         {editId && <button className="btn btn-block" style={{ marginTop: 10, color: 'var(--danger)' }} onClick={del}><Icon name="trash" size={17} /> 刪除住宿</button>}
       </div>
     </div>
+    <RangeCalendar
+      open={calOpen}
+      start={v.checkin || ''}
+      end={v.checkout || ''}
+      onClose={() => setCalOpen(false)}
+      onApply={(s, e) => setV((p) => ({ ...p, checkin: s, checkout: e }))}
+    />
+    </>
   )
 }
