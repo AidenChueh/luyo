@@ -4,7 +4,15 @@ import { useStore } from '../store'
 import { CATEGORIES } from '../data/seed'
 import { getMe } from '../lib/settings'
 
-const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '00', '0', 'del']
+const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'del']
+
+// 顯示：整數部加千分位、小數部照打的原樣保留（含輸入中的結尾小數點）
+const fmtAmt = (a) => {
+  if (!a) return '0'
+  const [int, dec] = a.split('.')
+  const i = int === '' ? '0' : Number(int).toLocaleString('en-US')
+  return dec === undefined ? i : `${i}.${dec}`
+}
 
 export default function AddExpenseSheet() {
   const { add, closeAdd, addExpense, editExpense, removeExpense, getExpenses, trips, getTrip, getCompanions, askConfirm } = useStore()
@@ -41,8 +49,14 @@ export default function AddExpenseSheet() {
   const splitAll = () => setSplit(split.length === allIds.length ? ['me'] : allIds)
 
   const press = (k) => {
-    if (k === 'del') setAmt((a) => a.slice(0, -1))
-    else if (amt.length < 9) setAmt((a) => (a === '' && k === '00' ? '' : a + k))
+    if (k === 'del') { setAmt((a) => a.slice(0, -1)); return }
+    if (k === '.') { setAmt((a) => (a.includes('.') ? a : a === '' ? '0.' : a + '.')); return }
+    setAmt((a) => {
+      if (a.includes('.') && a.split('.')[1].length >= 2) return a // 最多兩位小數
+      if (a.replace('.', '').length >= 9) return a
+      if (a === '0') return k === '0' ? a : k // 避免前導 0
+      return a + k
+    })
   }
 
   const valid = Number(amt) > 0
@@ -77,7 +91,7 @@ export default function AddExpenseSheet() {
 
         <div className="amount-display">
           <span className="cur">{trip.sym}</span>
-          <span className={`num ${amt ? '' : 'empty'}`}>{amt ? Number(amt).toLocaleString('en-US') : '0'}</span>
+          <span className={`num ${amt ? '' : 'empty'}`}>{fmtAmt(amt)}</span>
         </div>
 
         <div className="field">
