@@ -22,7 +22,7 @@ export default function AuthScreen() {
   }
 
   return (
-    <div className="stage">
+    <div className="stage auth-stage">
       <div className="app auth-app" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 24 }}>
         <div style={{ textAlign: 'center', marginBottom: 24 }}>
           <div style={{ fontFamily: 'var(--font-display)', fontSize: 34, fontWeight: 800, color: 'var(--primary)' }}>luyo</div>
