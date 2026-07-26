@@ -385,3 +385,9 @@
 - 範圍：src/lib/weather.js、src/components/Icon.jsx、src/screens/TripOverviewScreen.jsx、src/data/seed.js、src/components/AddTripSheet.jsx、src/store.jsx、src/lib/geocode.js
 - 做了什麼：旅程總覽天氣卡改接 Open-Meteo 即時資料，進行中旅程顯示今天、規劃中顯示出發日、已完成不顯示；出發日超過 16 天顯示「出發前兩週才有預報」。座標依序取地點庫→trip→Nominatim 並存回 trip，1 小時 localStorage 快取。Icon 新增 rain/snow。移除 seed 與新增旅程寫死的 weather 假資料。刪除旅程時一併清天氣快取。
 - 為什麼：原本天氣卡是寫死的靜態佔位，跟城市日期無關
+
+## 2026-07-26 06:35
+- 版號：v1.31
+- 範圍：src/lib/supabase.js、src/lib/cloud.js、src/lib/migrate.js、src/lib/image.js、src/lib/settings.js、src/auth.jsx、src/screens/AuthScreen.jsx、src/main.jsx、src/App.jsx、src/store.jsx、src/screens/StubScreen.jsx、src/screens/TripOverviewScreen.jsx、src/components/AddTripSheet.jsx、CompanionSheet.jsx、JournalSheet.jsx、PhotoSheet.jsx、PlaceSheet.jsx、.env.example
+- 做了什麼：加入登入系統與雲端同步，接真實 Supabase 後端。(1) Auth：Email + 密碼註冊/登入（關閉 email 驗證，註冊完直接進），未登入一律擋在 AuthScreen，錯誤訊息中文化；auth.jsx getSession 補 catch 避免離線卡在 loading。(2) 資料改存雲端：一人一列 app_state(user_id, data jsonb) JSON blob，載入時 fetch 雲端、localStorage 當離線快取（key luyo:cache:<userId>），變更以 1 秒 debounce whole-blob upsert 上雲（last-writer-wins）。新帳號開起來是空的，不再是範例假資料；範例資料退成「我的」頁手動按鈕（loadSample）。首次登入把本機自建旅程遷移上雲，遷移後清掉舊 localStorage keys。(3) 照片：新增 uploadImage 上傳到 Supabase public Storage bucket（photos，路徑 <userId>/<random>.jpg），改存 public URL 取代 base64；封面/頭像/日誌/相簿/地點共 6 處上傳點接上，失敗退回本機 dataURL。FlightSheet 機票 OCR 截圖不落地故不改。(4) 全域資料隔離靠 RLS（user_id = auth.uid()）與 Storage 資料夾政策，已用雙帳號 headless 煙霧測試實測：跨帳號讀不到、寫不了、不能傳進別人資料夾、public URL 可讀，10/10 通過。code review 修正：fetch 失敗與「無雲端列」分流避免既有用戶在新裝置被當首登而清空資料；applyBlob 無條件重置 profile/prefs/quickorder 並在首登遷移後 clearLegacy，避免共用裝置第二個帳號沿用前一帳號身分。
+- 為什麼：使用者要求「增加登入系統，不要一點開就是範例資料」，並選擇一次做到雲端同步 + 照片走 Storage
