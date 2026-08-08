@@ -67,7 +67,10 @@
   --s6: 32px;
 
   --app-w: 430px;
-  --nav-h: 64px;
+  --nav-h: 58px;
+  /* iPhone 的 34px home indicator 全帶進來會讓底部留白過多，只取七成 */
+  --nav-safe: calc(env(safe-area-inset-bottom, 0px) * 0.7);
+  --nav-total: calc(var(--nav-h) + var(--nav-safe));
 }
 
 /* ---- Dark theme（暖色深色） ---- */

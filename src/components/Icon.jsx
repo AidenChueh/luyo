@@ -5,6 +5,7 @@ const P = {
   heart: 'M19.5 5.5a5 5 0 0 0-7.5.6 5 5 0 0 0-7.5-.6c-2 2-2 5 0 7L12 20l7.5-7.5c2-2 2-5 0-7z',
   chevronLeft: 'M15 6l-6 6 6 6',
   chevronRight: 'M9 6l6 6-6 6',
+  chevronDown: 'M6 9l6 6 6-6',
   arrowUpRight: 'M7 17L17 7 M8 7h9v9',
   plane: 'M10.5 13.5L4 16v-2l5-3.5L8 5l1.5-.8 2.5 4.8 5.5-3a1.6 1.6 0 0 1 1.6 2.8l-5 3.2 1 5.5L14 18l-2.2-5z',
   bed: 'M3 8v10 M3 12h18v6 M21 18v-4a2 2 0 0 0-2-2h-7v-1a2 2 0 0 1 2-2h2',

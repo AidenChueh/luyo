@@ -21,25 +21,33 @@ const FILTERS = [
   { key: 'archived', label: '封存' },
 ]
 
-function StatusTag({ status }) {
+function StatusBadge({ status }) {
   const s = STATUS[status]
   return (
-    <span className="tag" style={{ background: s.soft, color: s.color }}>
-      <span style={{ width: 6, height: 6, borderRadius: 99, background: s.color }} />
+    <span className="badge glass">
+      <span className="dot" style={{ background: s.color }} />
       {s.label}
     </span>
   )
 }
 
+// 照片上的深色底讓 --accent 太暗，改用同語意但更亮的一組
+const BAR_OK = '#8FD9AE'
+const BAR_WARN = '#F5C563'
+const BAR_OVER = '#FF9270'
+
 function MiniBudget({ trip, spent }) {
   const p = pct(spent, trip.budget)
-  const barColor = p >= 85 ? 'var(--danger)' : p >= 50 ? 'var(--amber)' : 'var(--accent)'
+  const over = spent > trip.budget
+  const barColor = over ? BAR_OVER : p >= 85 ? BAR_WARN : BAR_OK
   return (
     <div className="mini-budget">
-      <div className="row" style={{ justifyContent: 'space-between', fontSize: 12, fontWeight: 600, marginBottom: 6 }}>
+      <div className="bl">
         {/* 首頁同時列出多趟不同幣別的旅程，幣別在每張卡標一次 */}
-        <span>{trip.currency} 已花 {money(spent, '')}</span>
-        <span style={{ opacity: 0.9 }}>剩 {money(trip.budget - spent, '')}</span>
+        <span>已花 {trip.currency} {money(spent, '')} / {money(trip.budget, '')}</span>
+        <span className="r" style={over ? { color: BAR_OVER, opacity: 1 } : undefined}>
+          {over ? '超支' : '剩餘'} {trip.currency} {money(Math.abs(trip.budget - spent), '')}
+        </span>
       </div>
       <div className="bar"><i style={{ width: `${Math.min(100, p)}%`, background: barColor }} /></div>
     </div>
@@ -52,6 +60,7 @@ export default function HomeScreen() {
   const [q, setQ] = useState('')
   const [sort, setSort] = useState('soon')
   const [filter, setFilter] = useState('all')
+  const [sortOpen, setSortOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const profile = getProfile()
   const notifsEnabled = getPrefs().notifications
@@ -99,11 +108,9 @@ export default function HomeScreen() {
 
   return (
     <>
-    <div className="scroll">
-      <header className="topbar">
-        <div>
-          <div className="greeting">早安，{profile.name} 👋</div>
-        </div>
+    <div className="scroll has-fab">
+      <header className="topbar home">
+        <div className="greeting">早安，{profile.name} 👋</div>
         <div className="grow" />
         <button className="iconbtn" onClick={() => setNotifOpen(true)} aria-label="通知" style={{ position: 'relative' }}>
           <Icon name="bell" size={20} />
@@ -113,14 +120,14 @@ export default function HomeScreen() {
         </button>
       </header>
 
-      <div className="pad">
+      <div className="pad" style={{ marginTop: 4 }}>
         <div className="search">
-          <Icon name="search" size={19} />
+          <Icon name="search" size={18} />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="搜尋旅程、國家、城市" />
         </div>
       </div>
 
-      <div className="pad section" style={{ marginTop: 16 }}>
+      <div className="pad" style={{ marginTop: 16 }}>
         <div className="chips">
           {FILTERS.map((f) => (
             <button key={f.key} className={`chip ${filter === f.key ? 'active' : ''}`} aria-label={f.key === 'fav' ? '收藏' : undefined} onClick={() => setFilter(f.key)}>
@@ -128,40 +135,58 @@ export default function HomeScreen() {
             </button>
           ))}
         </div>
-        <div className="row" style={{ gap: 8, marginTop: 10, fontSize: 12.5, color: 'var(--muted)', fontWeight: 600 }}>
-          <Icon name="sliders" size={15} /> 排序
-          {SORTS.map((s) => (
-            <button
-              key={s.key}
-              onClick={() => setSort(s.key)}
-              style={{ color: sort === s.key ? 'var(--primary)' : 'var(--muted)', fontWeight: sort === s.key ? 700 : 600 }}
-            >
-              {s.label}
+        <div className="row" style={{ marginTop: 12 }}>
+          <div className="sort-wrap">
+            <button className="sort-btn" aria-expanded={sortOpen} onClick={() => setSortOpen((v) => !v)}>
+              <Icon name="sliders" size={14} />
+              排序：<b>{SORTS.find((s) => s.key === sort).label}</b>
+              <Icon className="caret" name="chevronDown" size={14} />
             </button>
-          ))}
+            {sortOpen && (
+              <>
+                <div className="sort-scrim" onClick={() => setSortOpen(false)} />
+                <div className="sort-menu" role="listbox">
+                  {SORTS.map((s) => (
+                    <button
+                      key={s.key}
+                      role="option"
+                      aria-selected={sort === s.key}
+                      className={sort === s.key ? 'on' : ''}
+                      onClick={() => { setSort(s.key); setSortOpen(false) }}
+                    >
+                      {s.label}
+                      {sort === s.key && <Icon name="check" size={15} />}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Ongoing hero card */}
       {filter === 'all' && !q && ongoing && (
-        <div className="pad section">
+        <div className="pad" style={{ marginTop: 24 }}>
           <div className="eyebrow" style={{ marginBottom: 10 }}>進行中</div>
           <article className="trip-card big" onClick={() => nav(`/trip/${ongoing.id}`)}>
             <Cover src={ongoing.cover} gradient={ongoing.gradient} />
-            <div className="countdown-pill">
-              <span className="dot" style={{ background: 'var(--ongoing)' }} />
-              第 {ongoing.currentDay} 天 / 共 {ongoing.days} 天
+            <div className="card-badges">
+              <span className="badge solid">
+                <span className="dot" style={{ background: 'var(--ongoing)' }} />
+                第 {ongoing.currentDay} 天 / 共 {ongoing.days} 天
+              </span>
             </div>
             <button className={`fav ${ongoing.favorite ? 'on' : ''}`} onClick={(e) => onFav(e, ongoing.id)} aria-label="收藏">
               <Icon name="star" size={18} fill={ongoing.favorite} />
             </button>
             <div className="body">
-              <div className="dest"><Icon name="mapPin" size={14} /> {ongoing.country} · {ongoing.city}</div>
+              <div className="dest"><Icon name="mapPin" size={13} /> {ongoing.country} · {ongoing.city}</div>
               <div className="trip-name">{ongoing.name}</div>
               <div className="trip-meta">
-                <span><Icon name="calendar" size={13} /> {dateRange(ongoing.start, ongoing.end)}</span>
+                <span>{dateRange(ongoing.start, ongoing.end)}</span>
                 <span>{ongoing.days} 天</span>
-                <span><Icon name="users" size={13} /> {ongoing.companions} 人</span>
+                <span>{ongoing.companions} 人</span>
               </div>
               <MiniBudget trip={ongoing} spent={getSpent(ongoing)} />
             </div>
@@ -170,29 +195,25 @@ export default function HomeScreen() {
       )}
 
       {/* Other trips */}
-      <div className="pad section">
+      <div className="pad" style={{ marginTop: 24 }}>
         <div className="between" style={{ marginBottom: 12 }}>
           <div className="section-title">所有旅程</div>
-          <span className="muted" style={{ fontSize: 12.5, fontWeight: 600 }}>{list.length} 趟</span>
+          <span className="muted" style={{ fontSize: 12.5, fontWeight: 600 }}>共 {list.length} 趟</span>
         </div>
-        <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div className="stagger" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {(filter === 'all' && !q ? rest.filter((t) => t.id !== ongoing?.id) : list).map((t) => (
             <article key={t.id} className="trip-card small" onClick={() => nav(`/trip/${t.id}`)}>
               <Cover src={t.cover} gradient={t.gradient} />
-              <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 2, display: 'flex', alignItems: 'center', gap: 6 }}>
-                <StatusTag status={t.status} />
-                {t.status === 'planning' && (
-                  <span className="tag" style={{ background: 'rgba(28,25,23,.34)', color: '#fff', backdropFilter: 'blur(6px)' }}>
-                    {countdown(t.start).text}
-                  </span>
-                )}
+              <div className="card-badges">
+                <StatusBadge status={t.status} />
+                {t.status === 'planning' && <span className="badge solid">{countdown(t.start).text}</span>}
               </div>
               <button className={`fav ${t.favorite ? 'on' : ''}`} onClick={(e) => onFav(e, t.id)} aria-label="收藏">
-                <Icon name="star" size={17} fill={t.favorite} />
+                <Icon name="star" size={18} fill={t.favorite} />
               </button>
               <div className="body">
                 <div className="dest"><Icon name="mapPin" size={13} /> {t.country} · {t.city}</div>
-                <div className="trip-name" style={{ fontSize: 19 }}>{t.name}</div>
+                <div className="trip-name">{t.name}</div>
                 <div className="trip-meta">
                   <span>{dateRange(t.start, t.end)}</span>
                   <span>{t.days} 天</span>
