@@ -9,25 +9,18 @@ const TABS = [
   { key: 'profile', label: '我的', icon: 'user', path: '/profile' },
 ]
 
-const SUB = /^\/trip\/[^/]+\/(itinerary|expenses)/
-
 export default function BottomNav() {
   const nav = useNavigate()
   const { pathname } = useLocation()
 
+  // 底部導覽一律走跨旅程的全域入口；單一旅程的行程／記帳只從旅程內的快速入口進，
+  // 兩邊 context 分開才不會搞混「這趟」與「全部」
   const isActive = (t) => {
     if (t.path === '/') return pathname === '/'
-    if (t.key === 'itin') return pathname === '/itinerary' || /^\/trip\/[^/]+\/itinerary/.test(pathname)
-    if (t.key === 'expenses') return pathname === '/expenses' || /^\/trip\/[^/]+\/expenses/.test(pathname)
-    if (t.key === 'trips') return (pathname.startsWith('/trips') || pathname.startsWith('/trip/')) && !SUB.test(pathname)
+    if (t.key === 'itin') return pathname === '/itinerary'
+    if (t.key === 'expenses') return pathname === '/expenses'
+    if (t.key === 'trips') return pathname.startsWith('/trips') || pathname.startsWith('/trip/')
     return pathname.startsWith(t.path)
-  }
-
-  const tripId = pathname.match(/^\/trip\/([^/]+)/)?.[1]
-  const targetOf = (t) => {
-    if (tripId && t.key === 'itin') return `/trip/${tripId}/itinerary`
-    if (tripId && t.key === 'expenses') return `/trip/${tripId}/expenses`
-    return t.path
   }
 
   return (
@@ -36,9 +29,9 @@ export default function BottomNav() {
         <button
           key={t.key}
           className={`navitem ${isActive(t) ? 'active' : ''}`}
-          onClick={() => nav(targetOf(t))}
+          onClick={() => nav(t.path)}
         >
-          <Icon className="glyph" name={t.icon} size={34} fill={isActive(t) && t.icon === 'home'} />
+          <Icon className="glyph" name={t.icon} size={30} fill={isActive(t) && t.icon === 'home'} />
           <span>{t.label}</span>
         </button>
       ))}

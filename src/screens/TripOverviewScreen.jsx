@@ -10,15 +10,15 @@ import { getWeather } from '../lib/weather'
 import { geocode } from '../lib/geocode'
 
 const QUICK = [
-  { key: 'itinerary', label: '行程', icon: 'calendar', color: 'var(--cat-sight)', bg: 'var(--primary-soft)' },
-  { key: 'map', label: '地圖', icon: 'route', color: 'var(--cat-transport)', bg: 'var(--accent-soft)' },
-  { key: 'expenses', label: '記帳', icon: 'wallet', color: 'var(--cat-food)', bg: '#FBF0D6' },
-  { key: 'journal', label: '日誌', icon: 'journal', color: 'var(--cat-shopping)', bg: '#EFE9F5' },
-  { key: 'lists', label: '清單', icon: 'list', color: 'var(--cat-hotel)', bg: '#E2EEF4' },
-  { key: 'places', label: '地點', icon: 'mapPin', color: 'var(--cat-souvenir, #B5557E)', bg: '#F8E6EE' },
-  { key: 'flights', label: '機票', icon: 'plane', color: 'var(--cat-hotel)', bg: '#E2EEF4' },
-  { key: 'stay', label: '住宿', icon: 'bed', color: 'var(--cat-transport)', bg: 'var(--accent-soft)' },
-  { key: 'gallery', label: '相簿', icon: 'image', color: 'var(--cat-souvenir, #B5557E)', bg: '#F8E6EE' },
+  { key: 'itinerary', label: '行程', icon: 'calendar', hue: 'orange' },
+  { key: 'flights', label: '機票', icon: 'plane', hue: 'blue' },
+  { key: 'stay', label: '住宿', icon: 'bed', hue: 'green' },
+  { key: 'lists', label: '清單', icon: 'list', hue: 'blue' },
+  { key: 'journal', label: '日誌', icon: 'journal', hue: 'purple' },
+  { key: 'gallery', label: '相簿', icon: 'image', hue: 'pink' },
+  { key: 'expenses', label: '記帳', icon: 'wallet', hue: 'yellow' },
+  { key: 'places', label: '地點', icon: 'mapPin', hue: 'pink' },
+  { key: 'map', label: '地圖', icon: 'route', hue: 'green' },
 ]
 
 const orderedQuick = (order) => {
@@ -114,69 +114,63 @@ export default function TripOverviewScreen() {
       <section className="hero">
         <Cover src={trip.cover} gradient={trip.gradient} />
         <div className="hero-top">
-          <button className="iconbtn" onClick={() => nav(-1)} aria-label="返回"><Icon name="chevronLeft" size={22} /></button>
+          <button className="iconbtn" onClick={() => nav(-1)} aria-label="返回"><Icon name="chevronLeft" size={20} /></button>
           <div className="row" style={{ gap: 8 }}>
-            <button className="iconbtn" onClick={doShare} aria-label="分享"><Icon name="share" size={19} /></button>
-            <button className="iconbtn" onClick={() => setMenu(true)} aria-label="更多"><Icon name="dots" size={19} /></button>
+            <button className="iconbtn" onClick={doShare} aria-label="分享"><Icon name="share" size={20} /></button>
+            <button className="iconbtn" onClick={() => setMenu(true)} aria-label="更多"><Icon name="dots" size={20} /></button>
           </div>
         </div>
         <div style={{ position: 'relative', zIndex: 2 }}>
           <div className="dest" style={{ color: '#fff' }}><Icon name="mapPin" size={14} /> {trip.country} · {trip.city}</div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 600, margin: '4px 0 8px' }}>{trip.name}</h1>
+          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 600, margin: '4px 0 0' }}>{trip.name}</h1>
           <div className="trip-meta" style={{ color: '#fff' }}>
-            <span><Icon name="calendar" size={13} /> {dateRange(trip.start, trip.end)}</span>
-            <span>{trip.days} 天</span>
-            <span>{trip.status === 'ongoing' ? `第 ${trip.currentDay} 天` : trip.status === 'completed' ? '已結束' : '尚未出發'}</span>
+            <span>
+              {dateRange(trip.start, trip.end)} · {trip.days} 天 ·{' '}
+              {trip.status === 'ongoing' ? `第 ${trip.currentDay} 天` : trip.status === 'completed' ? '已結束' : '尚未出發'}
+            </span>
           </div>
         </div>
       </section>
 
       {trip.status !== 'completed' && (
-        <div className="pad section" style={{ marginTop: 18 }}>
+        <div className="pad" style={{ marginTop: 16 }}>
           <div className="weather-card">
-            <Icon name={wxState === 'ok' ? weather.icon : 'cloudSun'} size={34} style={{ color: 'var(--amber)' }} />
+            <Icon name={wxState === 'ok' ? weather.icon : 'cloudSun'} size={30} style={{ color: 'var(--amber)' }} />
             <div>
-              {wxState === 'ok' ? (
-                <>
-                  <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
-                    <span className="tmp">{weather.tmp}°</span>
-                    <span className="muted" style={{ fontSize: 13, fontWeight: 600 }}>{weather.cond}</span>
-                  </div>
-                  <div className="muted" style={{ fontSize: 12 }}>最高 {weather.hi}° · 最低 {weather.lo}° · {trip.city}</div>
-                </>
-              ) : (
-                <>
-                  <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
-                    <span className="tmp">—</span>
-                    <span className="muted" style={{ fontSize: 13, fontWeight: 600 }}>
-                      {wxState === 'loading' ? '取得天氣中…'
-                        : wxState === 'far' ? '出發前兩週才有預報'
-                        : wxState === 'nogeo' ? '無法定位這個城市'
-                        : '天氣暫時取不到'}
-                    </span>
-                  </div>
-                  <div className="muted" style={{ fontSize: 12 }}>{trip.city}</div>
-                </>
-              )}
+              <div className="row" style={{ gap: 8, alignItems: 'baseline' }}>
+                <span className="tmp">{wxState === 'ok' ? `${weather.tmp}°` : '—'}</span>
+                <span className="cond">
+                  {wxState === 'ok' ? weather.cond
+                    : wxState === 'loading' ? '取得天氣中…'
+                    : wxState === 'far' ? '出發前兩週才有預報'
+                    : wxState === 'nogeo' ? '無法定位這個城市'
+                    : '天氣暫時取不到'}
+                </span>
+              </div>
+              <div className="sub">
+                {wxState === 'ok' ? `最高 ${weather.hi}° · 最低 ${weather.lo}° · ${trip.city}` : trip.city}
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* Quick entries */}
-      <div className="pad section">
-        <div className="between" style={{ marginBottom: 12 }}>
+      <div className="pad" style={{ marginTop: 24 }}>
+        <div className="quick-head">
           <div className="section-title" style={{ fontSize: 16 }}>快速入口</div>
-          <span className="muted" style={{ fontSize: 12, fontWeight: 600 }}>長按右上角圖示可拖曳排序</span>
+          <span className="hint">長按拖曳排序</span>
         </div>
         <div className="quick-grid">
           {quick.map((q) => {
             const item = drag.item(q.key)
             const handle = drag.handle(q.key)
             return (
-              <button key={q.key} className="quick" onClick={() => go(q.key)} {...item} style={item.style}>
-                <span {...handle} className="quick-grip" aria-label={`拖曳排序：${q.label}`} style={handle.style}><Icon name="dots" size={14} /></span>
-                <span className="ic" style={{ background: q.bg, color: q.color }}><Icon name={q.icon} size={21} /></span>
+              <button key={q.key} className="quick" onClick={() => go(q.key)} {...item}>
+                <span {...handle} className="quick-grip" aria-label={`拖曳排序：${q.label}`} style={handle.style}><Icon name="grip" size={14} /></span>
+                <span className="ic" style={{ background: `var(--feat-${q.hue}-soft)`, color: `var(--feat-${q.hue})` }}>
+                  <Icon name={q.icon} size={19} />
+                </span>
                 <span className="lb">{q.label}</span>
               </button>
             )
@@ -185,38 +179,33 @@ export default function TripOverviewScreen() {
       </div>
 
       {/* 同行者 */}
-      <div className="pad section">
-        <button
-          className="card"
-          onClick={() => nav(`/trip/${id}/companions`)}
-          style={{ width: '100%', padding: 16, display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', border: '1px solid var(--line)' }}
-        >
-          <span className="ic" style={{ width: 44, height: 44, borderRadius: 14, background: 'var(--accent-soft)', color: 'var(--accent)', display: 'grid', placeItems: 'center', flex: 'none' }}>
-            <Icon name="users" size={22} />
+      <div className="pad" style={{ marginTop: 24 }}>
+        <button className="feature-card" onClick={() => nav(`/trip/${id}/companions`)}>
+          <span className="ic" style={{ background: 'var(--feat-green-soft)', color: 'var(--feat-green)' }}>
+            <Icon name="users" size={21} />
           </span>
-          <span style={{ flex: 1 }}>
-            <span style={{ fontWeight: 600, fontSize: 15, display: 'block' }}>同行者與分帳</span>
-            <span className="muted" style={{ fontSize: 12.5 }}>{trip.companions} 位同行 · 共同支出自動結算</span>
+          <span className="tx">
+            <span className="t">同行者與分帳</span>
+            <span className="s">{trip.companions} 位同行 · 共同支出自動結算</span>
           </span>
-          <Icon name="chevronRight" size={18} style={{ color: 'var(--muted)' }} />
+          <Icon name="chevronRight" size={18} className="cv" />
         </button>
       </div>
 
       {/* 旅程總結 */}
-      <div className="pad section">
+      <div className="pad" style={{ marginTop: 16 }}>
         <button
-          className="card"
+          className={`feature-card ${trip.status === 'completed' ? 'on' : ''}`}
           onClick={() => nav(`/trip/${id}/summary`)}
-          style={{ width: '100%', padding: 16, display: 'flex', alignItems: 'center', gap: 14, textAlign: 'left', border: trip.status === 'completed' ? '1px solid var(--primary)' : '1px solid var(--line)' }}
         >
-          <span className="ic" style={{ width: 44, height: 44, borderRadius: 14, background: 'var(--primary-soft)', color: 'var(--primary)', display: 'grid', placeItems: 'center', flex: 'none' }}>
-            <Icon name="sparkles" size={22} />
+          <span className="ic" style={{ background: 'var(--feat-orange-soft)', color: 'var(--primary)' }}>
+            <Icon name="sparkles" size={21} />
           </span>
-          <span style={{ flex: 1 }}>
-            <span style={{ fontWeight: 600, fontSize: 15, display: 'block' }}>旅程總結報告卡</span>
-            <span className="muted" style={{ fontSize: 12.5 }}>{trip.status === 'completed' ? '行程已結束，回顧已生成' : '即時彙整花費、地點、日誌'}</span>
+          <span className="tx">
+            <span className="t">旅程總結</span>
+            <span className="s">{trip.status === 'completed' ? '行程已結束，回顧已生成' : '即時彙整花費、地點與日誌'}</span>
           </span>
-          <Icon name="chevronRight" size={18} style={{ color: 'var(--muted)' }} />
+          <Icon name="chevronRight" size={18} className="cv" />
         </button>
       </div>
     </div>

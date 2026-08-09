@@ -42,6 +42,14 @@
   --cat-souvenir: #B5557E;
   --cat-sim: #6B7C93;
 
+  /* ---- Feature colors（快速入口／功能入口共用，其他頁面沿用同一組） ---- */
+  --feat-orange: var(--cat-sight);      --feat-orange-soft: var(--primary-soft);
+  --feat-blue:   var(--cat-hotel);      --feat-blue-soft:   #E2EEF4;
+  --feat-green:  var(--cat-transport);  --feat-green-soft:  var(--accent-soft);
+  --feat-purple: var(--cat-shopping);   --feat-purple-soft: #EFE9F5;
+  --feat-pink:   var(--cat-souvenir);   --feat-pink-soft:   #F8E6EE;
+  --feat-yellow: var(--cat-food);       --feat-yellow-soft: var(--amber-soft);
+
   /* ---- Type ---- */
   --font-display: 'Fraunces', 'Noto Serif TC', Georgia, serif;
   --font-body: 'Plus Jakarta Sans', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -67,7 +75,7 @@
   --s6: 32px;
 
   --app-w: 430px;
-  --nav-h: 58px;
+  --nav-h: 54px;
   /* iPhone 的 34px home indicator 全帶進來會讓底部留白過多，只取七成 */
   --nav-safe: calc(env(safe-area-inset-bottom, 0px) * 0.7);
   --nav-total: calc(var(--nav-h) + var(--nav-safe));
@@ -115,6 +123,11 @@
   --cat-other: #8F867F;
   --cat-souvenir: #C06E91;
   --cat-sim: #7A899E;
+
+  /* 深色下 pastel 底改成低亮度同色，維持 icon 對比 */
+  --feat-blue-soft: #22303A;
+  --feat-purple-soft: #2C2635;
+  --feat-pink-soft: #35242C;
 
   --sh-1: 0 1px 2px rgba(0,0,0,.4), 0 2px 8px rgba(0,0,0,.28);
   --sh-2: 0 4px 16px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.4);
