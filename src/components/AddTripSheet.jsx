@@ -1,12 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Icon from './Icon'
 import RangeCalendar from './RangeCalendar'
 import { useStore } from '../store'
 import { useAuth } from '../auth'
+import { STATUS } from '../data/seed'
 import { pickImage, uploadImage } from '../lib/image'
 import { getPrefs } from '../lib/settings'
-import { parseYMD, decimalInput } from '../lib/format'
+import { parseYMD, decimalInput, groupNum } from '../lib/format'
 
 const CURRENCIES = [
   { code: 'TWD', sym: 'NT$' },
@@ -59,10 +60,18 @@ export default function AddTripSheet() {
   const [grad, setGrad] = useState(GRADIENTS[0])
   const [cover, setCover] = useState('')
   const [calOpen, setCalOpen] = useState(false)
+  const [touched, setTouched] = useState({})
+  const [done, setDone] = useState(false)
+
+  const nameRef = useRef(null)
+  const countryRef = useRef(null)
+  const cityRef = useRef(null)
+  const budgetRef = useRef(null)
 
   useEffect(() => {
     if (!tripSheet.open) return
     const t = editing ? getTrip(editing) : null
+    setTouched({}); setDone(false)
     if (t) {
       setName(t.name); setCountry(t.country === '—' ? '' : t.country); setCity(t.city === '—' ? '' : t.city)
       setStart(t.start); setEnd(t.end); setCur(t.currency); setBudget(String(t.budget || ''))
@@ -76,11 +85,37 @@ export default function AddTripSheet() {
   if (!tripSheet.open) return null
 
   const days = Math.max(1, diffDays(start, end))
-  const valid = name.trim() && new Date(end) >= new Date(start)
+  const dateErr = parseYMD(end) < parseYMD(start)
+  const required = { name, country, city }
+  const missing = Object.keys(required).filter((k) => !required[k].trim())
+  const valid = missing.length === 0 && !dateErr
   const sym = CURRENCIES.find((c) => c.code === cur).sym
 
+  const errOf = (k) => (touched[k] && !required[k].trim() ? true : false)
+  const markTouched = (k) => setTouched((p) => ({ ...p, [k]: true }))
+
+  // 輸入框聚焦時把自己捲到可視中央，避免被鍵盤蓋住
+  const onFocusScroll = (e) => {
+    const el = e.target
+    setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 260)
+  }
+  const goNext = (e, ref) => {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+    if (ref?.current) ref.current.focus()
+    else e.target.blur()
+  }
+  // 點表單空白處收鍵盤
+  const dismissKeyboard = (e) => {
+    if (e.target.closest?.('input, select, textarea, button')) return
+    document.activeElement?.blur?.()
+  }
+
   const submit = () => {
-    if (!valid) return
+    if (!valid) {
+      setTouched({ name: true, country: true, city: true })
+      return
+    }
     const status = statusOf(start, end)
     const fields = {
       name: name.trim(),
@@ -91,7 +126,8 @@ export default function AddTripSheet() {
     }
     if (editing) {
       editTrip(editing, fields)
-      closeTripSheet()
+      setDone(true)
+      setTimeout(() => { setDone(false); closeTripSheet() }, 900)
       return
     }
     const id = 'trip-' + Date.now()
@@ -100,108 +136,164 @@ export default function AddTripSheet() {
       stats: { doneItin: 0, places: 0, photos: 0 },
       ...fields,
     })
-    closeTripSheet()
-    nav(`/trip/${id}`)
+    setDone(true)
+    setTimeout(() => { setDone(false); closeTripSheet(); nav(`/trip/${id}`) }, 900)
   }
 
   return (
     <>
     <div className="sheet-overlay" onClick={closeTripSheet}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()}>
+      <div className="sheet form-sheet trip-form" onClick={(e) => e.stopPropagation()} onMouseDown={dismissKeyboard}>
         <div className="grabber" />
-        <div className="between">
-          <button className="iconbtn ghost" onClick={closeTripSheet} aria-label="關閉"><Icon name="chevronLeft" size={20} /></button>
-          <div style={{ fontWeight: 700, fontSize: 15 }}>{editing ? '編輯旅程' : '新增旅程'}</div>
+        <div className="sheet-head">
+          <button className="iconbtn" onClick={closeTripSheet} aria-label="關閉"><Icon name="chevronLeft" size={20} /></button>
+          <div className="t">{editing ? '編輯旅程' : '新增旅程'}</div>
           <span style={{ width: 40 }} />
         </div>
 
-        <div className="field" style={{ marginTop: 18 }}>
+        <div className={`field tight ${errOf('name') ? 'err' : ''}`}>
           <label>旅程名稱</label>
-          <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="例如：京都・大阪輕旅行" />
+          <input
+            ref={nameRef} type="text" value={name} enterKeyHint="next"
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => markTouched('name')}
+            onFocus={onFocusScroll}
+            onKeyDown={(e) => goNext(e, countryRef)}
+            placeholder="例如：京都・大阪輕旅行"
+          />
+          {errOf('name') && <div className="field-err"><Icon name="alert" size={13} /> 請輸入旅程名稱</div>}
         </div>
 
-        <div className="row" style={{ gap: 12 }}>
-          <div className="field" style={{ flex: 1 }}>
+        <div className="form-row">
+          <div className={`field ${errOf('country') ? 'err' : ''}`} style={{ flex: 40 }}>
             <label>國家</label>
-            <input type="text" value={country} onChange={(e) => setCountry(e.target.value)} placeholder="日本" />
+            <input
+              ref={countryRef} type="text" value={country} enterKeyHint="next"
+              onChange={(e) => setCountry(e.target.value)}
+              onBlur={() => markTouched('country')}
+              onFocus={onFocusScroll}
+              onKeyDown={(e) => goNext(e, cityRef)}
+              placeholder="日本"
+            />
           </div>
-          <div className="field" style={{ flex: 1 }}>
+          <div className={`field ${errOf('city') ? 'err' : ''}`} style={{ flex: 60 }}>
             <label>城市</label>
-            <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="京都・大阪" />
+            <input
+              ref={cityRef} type="text" value={city} enterKeyHint="next"
+              onChange={(e) => setCity(e.target.value)}
+              onBlur={() => markTouched('city')}
+              onFocus={onFocusScroll}
+              onKeyDown={(e) => goNext(e, budgetRef)}
+              placeholder="京都・大阪"
+            />
           </div>
         </div>
+        {(errOf('country') || errOf('city')) && (
+          <div className="field-err">
+            <Icon name="alert" size={13} />
+            {errOf('country') && errOf('city') ? '請填寫國家與城市' : errOf('country') ? '請輸入國家' : '請輸入城市'}
+          </div>
+        )}
 
-        <div className="row date-row" style={{ gap: 12 }}>
-          <div className="field" style={{ flex: 1 }}>
+        <div className="form-row">
+          <div className={`field ${dateErr ? 'err' : ''}`} style={{ flex: 1 }}>
             <label>開始日</label>
             <button type="button" className="date-pick" onClick={() => setCalOpen(true)}>
               <Icon name="calendar" size={16} className="di" /> {fmtDate(start)}
             </button>
           </div>
-          <div className="field" style={{ flex: 1 }}>
+          <div className={`field ${dateErr ? 'err' : ''}`} style={{ flex: 1 }}>
             <label>結束日</label>
             <button type="button" className="date-pick" onClick={() => setCalOpen(true)}>
               <Icon name="calendar" size={16} className="di" /> {fmtDate(end)}
             </button>
           </div>
         </div>
-        <div className="muted" style={{ fontSize: 12.5, fontWeight: 600, marginTop: 8 }}>
-          <Icon name="calendar" size={13} /> 共 {days} 天 · {statusOf(start, end) === 'ongoing' ? '進行中' : statusOf(start, end) === 'completed' ? '已結束' : '規劃中'}
-        </div>
+        {dateErr ? (
+          <div className="field-err"><Icon name="alert" size={13} /> 結束日期不能早於開始日期</div>
+        ) : (
+          <div className="form-summary">
+            <Icon name="calendar" size={13} /> 共 {days} 天 · {STATUS[statusOf(start, end)].label}
+          </div>
+        )}
 
-        <div className="row" style={{ gap: 12 }}>
-          <div className="field" style={{ width: 120 }}>
+        <div className="form-row" style={{ marginTop: 16 }}>
+          <div className="field" style={{ flex: 33 }}>
             <label>主幣別</label>
-            <select
-              value={cur}
-              onChange={(e) => setCur(e.target.value)}
-              style={{ width: '100%', padding: '13px 12px', borderRadius: 'var(--r-md)', border: '1px solid var(--line)', background: 'var(--surface)', fontSize: 15, color: 'var(--ink)' }}
-            >
-              {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
-            </select>
+            <div className="select-wrap">
+              <select value={cur} onChange={(e) => setCur(e.target.value)}>
+                {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.code}</option>)}
+              </select>
+              <Icon name="chevronDown" size={16} />
+            </div>
           </div>
-          <div className="field" style={{ flex: 1 }}>
-            <label>總預算（{sym}）</label>
-            <input type="text" inputMode="decimal" value={budget} onChange={(e) => setBudget(decimalInput(e.target.value))} placeholder="0" />
+          <div className="field" style={{ flex: 67 }}>
+            <label>總預算 <span className="opt">（可選）</span></label>
+            <div className="money-input">
+              <span className="pfx">{sym}</span>
+              <input
+                ref={budgetRef} type="text" inputMode="decimal" enterKeyHint="done"
+                value={groupNum(budget)}
+                onChange={(e) => setBudget(decimalInput(e.target.value.replace(/,/g, '')))}
+                onFocus={onFocusScroll}
+                onKeyDown={(e) => goNext(e, null)}
+                placeholder="0"
+              />
+            </div>
           </div>
         </div>
 
-        <div className="field">
-          <label>封面照片（可選）</label>
-          <div className="row" style={{ gap: 10 }}>
-            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => pickImage(async (d) => { try { setCover(await uploadImage(user.id, d)) } catch { setCover(d) } })}>
-              <Icon name="image" size={17} /> {cover ? '重新上傳' : '從裝置上傳'}
-            </button>
-            {cover && (
-              <div style={{ width: 46, height: 46, borderRadius: 12, backgroundImage: `url(${cover})`, backgroundSize: 'cover', backgroundPosition: 'center', flex: 'none', position: 'relative' }}>
-                <button onClick={() => setCover('')} aria-label="移除圖片" className="img-remove" style={{ position: 'absolute', top: -6, right: -6, width: 20, height: 20, borderRadius: '50%', background: 'var(--ink)', color: '#fff', fontSize: 13 }}>×</button>
+        <div className="field section-gap">
+          <label>封面照片 <span className="opt">（可選）</span></label>
+          {cover ? (
+            <div className="cover-preview" style={{ backgroundImage: `url(${cover})` }}>
+              <div className="acts">
+                <button onClick={() => pickImage(async (d) => { try { setCover(await uploadImage(user.id, d)) } catch { setCover(d) } })}>
+                  <Icon name="image" size={13} /> 更換
+                </button>
+                <button onClick={() => setCover('')} aria-label="移除封面照片"><Icon name="trash" size={13} /></button>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <button className="upload-btn" onClick={() => pickImage(async (d) => { try { setCover(await uploadImage(user.id, d)) } catch { setCover(d) } })}>
+              <Icon name="image" size={16} /> 從裝置上傳
+            </button>
+          )}
         </div>
 
-        <div className="field">
-          <label>{cover ? '封面備用色' : '封面色'}</label>
-          <div className="row" style={{ gap: 10 }}>
+        <div className="field section-gap">
+          <label>預設封面色</label>
+          <div className="grad-row">
             {GRADIENTS.map((g) => (
               <button
                 key={g}
+                className={`grad-sw ${grad === g ? 'on' : ''}`}
+                style={{ background: g }}
+                aria-label="選擇封面色"
+                aria-pressed={grad === g}
                 onClick={() => setGrad(g)}
-                style={{
-                  flex: 1, height: 46, borderRadius: 'var(--r-md)', background: g,
-                  border: grad === g ? '2.5px solid var(--ink)' : '2.5px solid transparent',
-                  boxShadow: 'var(--sh-1)',
-                }}
-              />
+              >
+                {grad === g && <Icon name="check" size={17} />}
+              </button>
             ))}
           </div>
+          <div className="field-hint">{cover ? '已上傳照片，優先使用照片作為封面' : '未上傳照片時使用'}</div>
         </div>
 
-        <button className="btn btn-primary btn-block" style={{ marginTop: 20, opacity: valid ? 1 : 0.5 }} onClick={submit} disabled={!valid}>
-          <Icon name="check" size={19} /> {editing ? '儲存變更' : '建立旅程'}
+        <button className="btn btn-primary btn-block" style={{ marginTop: 24 }} onClick={submit} disabled={!valid}>
+          {editing ? '儲存變更' : '建立旅程'}
         </button>
       </div>
     </div>
+
+    {done && (
+      <div className="form-done">
+        <div className="box">
+          <span className="ok"><Icon name="check" size={24} /></span>
+          {editing ? '旅程已更新' : '旅程建立完成'}
+        </div>
+      </div>
+    )}
     <RangeCalendar
       open={calOpen}
       start={start}

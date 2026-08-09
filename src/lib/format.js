@@ -14,6 +14,15 @@ export const decimalInput = (s) => {
   return i === -1 ? c : c.slice(0, i + 1) + c.slice(i + 1).replace(/\./g, '')
 }
 
+// 邊打邊補千分位：整數部分分組，小數點與其後原樣保留
+export const groupNum = (s) => {
+  const v = String(s ?? '')
+  if (!v) return ''
+  const dot = v.indexOf('.')
+  const int = dot === -1 ? v : v.slice(0, dot)
+  return int.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + (dot === -1 ? '' : v.slice(dot))
+}
+
 export const parseYMD = (s) => {
   const [y, m, d] = s.split('-').map(Number)
   return new Date(y, m - 1, d)

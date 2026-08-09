@@ -242,6 +242,13 @@ button:focus-visible, a:focus-visible {
 .btn:active { transform: scale(.97); }
 .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 6px 16px rgba(232,116,59,.32); }
 .btn-primary:active { background: var(--primary-press); }
+/* 淡橘底＋深橘字，維持可讀對比又明顯是不可按（其他 sheet 仍用各自的 opacity 寫法） */
+.trip-form .btn-primary:disabled {
+  background: color-mix(in srgb, var(--primary) 24%, var(--surface));
+  color: color-mix(in srgb, var(--primary-press) 70%, var(--ink));
+  box-shadow: none; cursor: not-allowed;
+}
+.trip-form .btn-primary:disabled:active { transform: none; }
 .btn-ghost { background: var(--surface); color: var(--ink); box-shadow: var(--sh-1); }
 .btn-block { width: 100%; }
 
@@ -709,13 +716,129 @@ button:focus-visible, a:focus-visible {
 .amount-display .num.empty { color: var(--line-strong); }
 
 .field { margin-top: 16px; }
-.field > label { font-size: 12.5px; font-weight: 700; color: var(--ink-2); display: block; margin-bottom: 8px; }
+.field > label { font-size: 12.5px; font-weight: 600; line-height: 1.4; color: var(--ink-2); display: block; margin-bottom: 8px; }
+.field > label .opt { font-weight: 500; color: var(--muted); }
 .field input[type="text"], .field input[type="email"], .field input[type="date"], .field input[type="time"], .field input[type="password"] {
-  width: 100%; min-width: 0; padding: 13px 14px; border-radius: var(--r-md);
+  width: 100%; min-width: 0; min-height: 48px; padding: 0 14px; border-radius: var(--r-md);
   border: 1px solid var(--line); background: var(--surface);
   font-size: 16px; color: var(--ink); outline: none;
 }
-.field input:focus { border-color: var(--primary); }
+/* select 只在旅程表單統一，其他頁的 select 各自帶 inline 樣式不動 */
+.trip-form .field select {
+  width: 100%; min-width: 0; min-height: 48px; padding: 0 14px; border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--surface);
+  font-size: 16px; color: var(--ink); outline: none;
+}
+.field input::placeholder { color: var(--muted); opacity: 1; }
+.field input:focus, .trip-form .field select:focus { border-color: var(--primary); }
+/* Disabled 用灰底＋更淡的字，才不會跟 placeholder 混淆 */
+.field input:disabled, .trip-form .field select:disabled {
+  background: var(--sand); color: var(--line-strong);
+  -webkit-text-fill-color: var(--line-strong); cursor: not-allowed;
+}
+.field.err input, .field.err select, .field.err .date-pick, .field.err .money-input { border-color: var(--danger); }
+.field-err {
+  display: flex; align-items: center; gap: 5px; margin-top: 6px;
+  font-size: 12px; font-weight: 600; color: var(--danger);
+}
+.field-hint { font-size: 12px; font-weight: 500; color: var(--muted); margin-top: 6px; }
+
+.select-wrap { position: relative; }
+.field .select-wrap select { -webkit-appearance: none; appearance: none; font-weight: 600; padding-right: 34px; }
+.select-wrap > svg { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+
+/* 幣別符號直接放進輸入框，不必在 label 再標一次 */
+.money-input {
+  display: flex; align-items: center; gap: 8px;
+  min-height: 48px; padding: 0 14px; border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--surface);
+}
+.money-input:focus-within { border-color: var(--primary); }
+.money-input .pfx { flex: none; font-size: 15px; font-weight: 700; color: var(--ink-2); }
+/* 選擇器要蓋過 .field input[type="text"]，否則內層又會長出一圈邊框 */
+.field .money-input input[type="text"] {
+  flex: 1; width: auto; min-width: 0; min-height: 0;
+  border: none; outline: none; background: none; border-radius: 0;
+  padding: 0; font-size: 16px; color: var(--ink);
+}
+.money-input input::placeholder { color: var(--muted); opacity: 1; }
+
+/* ---------- Sheet form ---------- */
+.sheet.form-sheet { padding-top: 6px; }
+.sheet.form-sheet .grabber { margin: 2px auto 8px; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.sheet-head .t { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.sheet-head .iconbtn { background: var(--surface-2); box-shadow: none; color: var(--ink-2); }
+.form-row { display: flex; gap: 12px; }
+.form-row > .field { min-width: 0; margin-top: 0; }
+.trip-form .field { margin-top: 20px; }
+.trip-form .form-row { margin-top: 20px; }
+.trip-form .field.tight { margin-top: 14px; }
+.trip-form .section-gap { margin-top: 24px; }
+/* 窄螢幕改上下排，避免欄位被壓到讀不出來 */
+@media (max-width: 360px) {
+  .form-row { flex-direction: column; gap: 0; }
+  .form-row > .field { flex: none !important; width: 100%; }
+  .form-row > .field + .field { margin-top: 20px; }
+}
+
+.form-summary {
+  display: flex; align-items: center; gap: 6px; margin-top: 6px;
+  font-size: 12px; font-weight: 500; color: var(--muted);
+}
+.form-summary svg { opacity: .7; }
+
+.upload-btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; min-height: 44px; padding: 0 14px;
+  border-radius: var(--r-md);
+  background: var(--surface); border: 1px dashed var(--line-strong);
+  font-size: 14px; font-weight: 600; color: var(--ink-2);
+  transition: border-color .15s ease, background .15s ease;
+}
+.upload-btn:active { background: var(--surface-2); border-color: var(--primary); }
+.cover-preview {
+  position: relative; width: 100%; height: 128px;
+  border-radius: 18px; overflow: hidden;
+  background-size: cover; background-position: center;
+  box-shadow: var(--sh-1);
+}
+.cover-preview .acts { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; }
+.cover-preview .acts button {
+  display: inline-flex; align-items: center; gap: 4px;
+  height: 30px; padding: 0 10px; border-radius: var(--r-pill);
+  background: rgba(28,25,23,.44); backdrop-filter: blur(8px);
+  color: #fff; font-size: 12px; font-weight: 600;
+}
+
+.grad-row { display: flex; gap: 10px; }
+/* 選中用外框陰影而非 border，色塊尺寸才不會跟著變 */
+.grad-sw {
+  flex: 1; height: 44px; border-radius: var(--r-md);
+  display: grid; place-items: center; color: #fff;
+  box-shadow: var(--sh-1);
+  transition: box-shadow .18s ease;
+}
+.grad-sw.on { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--primary); }
+
+.form-done {
+  position: absolute; inset: 0; z-index: 65;
+  display: grid; place-items: center;
+  background: rgba(28,25,23,.38); backdrop-filter: blur(3px);
+  animation: ovIn .2s ease both;
+}
+.form-done .box {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: 24px 30px; border-radius: 20px;
+  background: var(--surface); box-shadow: var(--sh-3);
+  font-size: 15px; font-weight: 700; color: var(--ink);
+  animation: fadeUp .28s cubic-bezier(.22,.61,.36,1) both;
+}
+.form-done .ok {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent);
+  display: grid; place-items: center;
+}
 /* WebKit date/time input 的原生外觀帶固有最小寬度，width/min-width 壓不住，得拔掉 appearance */
 .field input[type="date"], .field input[type="time"] {
   display: block; -webkit-appearance: none; appearance: none;
@@ -726,11 +849,12 @@ button:focus-visible, a:focus-visible {
 
 /* ---------- Date-range picker ---------- */
 .date-pick {
-  width: 100%; min-height: 48px; padding: 13px 14px; border-radius: var(--r-md);
+  width: 100%; min-height: 48px; padding: 0 14px; border-radius: var(--r-md);
   border: 1px solid var(--line); background: var(--surface);
   font-size: 16px; color: var(--ink); text-align: left;
   display: flex; align-items: center; gap: 8px;
 }
+.date-pick:focus-visible { border-color: var(--primary); }
 .date-pick.placeholder { color: var(--muted); }
 .date-pick .di { color: var(--muted); flex: none; }
 
