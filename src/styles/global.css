@@ -108,6 +108,8 @@ button:focus-visible, a:focus-visible {
   background: linear-gradient(var(--bg) 70%, rgba(251, 248, 244, 0));
 }
 .topbar.solid { background: var(--bg); border-bottom: 1px solid var(--line); }
+.topbar.tight { padding: calc(10px + env(safe-area-inset-top, 0px)) 18px 8px; }
+.topbar.tight .iconbtn { box-shadow: 0 1px 2px rgba(28, 25, 23, .05); background: var(--surface); }
 /* 首頁只有一行招呼語，壓低高度把版面讓給旅程內容 */
 .topbar.home { padding: calc(10px + env(safe-area-inset-top, 0px)) 20px 8px; }
 .topbar.home .greeting { font-size: 12.5px; }
@@ -243,13 +245,20 @@ button:focus-visible, a:focus-visible {
 .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 6px 16px rgba(232,116,59,.32); }
 .btn-primary:active { background: var(--primary-press); }
 /* 淡橘底＋深橘字，維持可讀對比又明顯是不可按（其他 sheet 仍用各自的 opacity 寫法） */
-.trip-form .btn-primary:disabled {
+.trip-form .btn-primary:disabled, .form-sheet .btn-primary:disabled {
   background: color-mix(in srgb, var(--primary) 24%, var(--surface));
   color: color-mix(in srgb, var(--primary-press) 70%, var(--ink));
   box-shadow: none; cursor: not-allowed;
 }
-.trip-form .btn-primary:disabled:active { transform: none; }
+.trip-form .btn-primary:disabled:active, .form-sheet .btn-primary:disabled:active { transform: none; }
 .btn-ghost { background: var(--surface); color: var(--ink); box-shadow: var(--sh-1); }
+/* 次要動作：細框無陰影，跟 Primary 拉開層級 */
+.btn-outline {
+  background: var(--surface); color: var(--ink);
+  border: 1px solid var(--line-strong); box-shadow: none;
+}
+.btn-outline:active { background: var(--surface-2); }
+.btn-outline:disabled { color: var(--muted); border-color: var(--line); }
 .btn-block { width: 100%; }
 
 .fab {
@@ -416,6 +425,7 @@ button:focus-visible, a:focus-visible {
   padding: 9px 12px; border-radius: var(--r-md);
   background: var(--surface); border: 1px solid var(--line);
   box-shadow: var(--sh-1);
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
 }
 .daypill .d { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .06em; }
 .daypill .n { font-family: var(--font-display); font-size: 18px; font-weight: 600; margin-top: 1px; }
@@ -427,11 +437,15 @@ button:focus-visible, a:focus-visible {
   display: grid; grid-template-columns: 50px 16px minmax(0, 1fr);
   column-gap: 12px; align-items: start; padding-bottom: 14px;
 }
+/* 開始時間在上、細線往下帶到結束時間，避免被讀成兩筆行程 */
 .tl-time {
-  min-width: 0; text-align: right; padding-top: 2px;
-  font-size: 12px; font-weight: 700; color: var(--ink-2); line-height: 1.35;
+  min-width: 0; padding-top: 3px;
+  display: flex; flex-direction: column; align-items: flex-end;
+  line-height: 1.3;
 }
-.tl-time small { display: block; font-weight: 500; color: var(--muted); font-size: 10.5px; }
+.tl-time b { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+.tl-time .tick { display: block; width: 1px; height: 9px; margin: 2px 16px 2px 0; background: var(--line-strong); }
+.tl-time small { font-weight: 500; color: var(--muted); font-size: 11px; }
 .tl-rail { position: relative; display: flex; justify-content: center; align-self: stretch; min-height: 100%; }
 .tl-line {
   position: absolute; top: 16px; bottom: -14px; left: 50%; width: 2px;
@@ -439,7 +453,7 @@ button:focus-visible, a:focus-visible {
   z-index: 0; pointer-events: none;
 }
 .tl-dot {
-  position: relative; z-index: 1; margin-top: 4px;
+  position: relative; z-index: 1; margin-top: 5px;
   width: 12px; height: 12px; border-radius: 50%; border: 2.5px solid var(--bg);
   flex: 0 0 auto;
 }
@@ -448,7 +462,7 @@ button:focus-visible, a:focus-visible {
 }
 .tl-card {
   background: var(--surface); border: 1px solid var(--line);
-  border-left-width: 4px; border-radius: var(--r-md);
+  border-left-width: 3px; border-radius: var(--r-md);
   padding: 12px 14px; box-shadow: var(--sh-1);
 }
 .tl-card .t { font-weight: 600; font-size: 15px; }
@@ -922,6 +936,57 @@ button:focus-visible, a:focus-visible {
 .toggle i { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; box-shadow: var(--sh-1); transition: transform .2s; }
 .toggle.on i { transform: translateX(18px); }
 
+/* ---------- Itinerary ---------- */
+.itin-empty {
+  padding: 30px 16px; text-align: center;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--r-lg); box-shadow: var(--sh-1);
+}
+.itin-empty .t { font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.itin-empty .a {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 12px;
+  font-size: 13.5px; font-weight: 700; color: var(--primary);
+}
+
+.pick-row {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 12px 14px; border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--surface);
+  font-size: 14.5px; font-weight: 600; text-align: left;
+}
+.pick-row + .pick-row { margin-top: 8px; }
+.pick-row.on { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+.pick-row .rd {
+  width: 20px; height: 20px; border-radius: 50%; flex: none;
+  border: 2px solid var(--line-strong); display: grid; place-items: center; color: #fff;
+}
+.pick-row.on .rd { border-color: var(--primary); background: var(--primary); }
+.pick-row .sub { margin-left: auto; font-size: 12.5px; font-weight: 500; color: var(--muted); }
+.pick-row.on .sub { color: var(--primary); }
+
+/* 備註是唯一需要多行的欄位，跟一般 input 分開 */
+.note-area {
+  width: 100%; min-height: 88px; max-height: 132px;
+  padding: 12px 14px; border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--surface);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.6; color: var(--ink);
+  outline: none; resize: none; overflow-y: auto;
+}
+.note-area:focus { border-color: var(--primary); }
+.note-area::placeholder { color: var(--muted); }
+
+.link-row {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  min-height: 48px; padding: 0 14px; border-radius: var(--r-md);
+  border: 1px solid var(--line); background: var(--surface);
+  font-size: 14px; font-weight: 600; color: var(--ink); text-align: left;
+}
+.link-row .lk { flex: 1; min-width: 0; }
+.link-row .go { color: var(--primary); flex: none; }
+.link-acts { display: flex; gap: 16px; margin-top: 8px; }
+.link-acts button { font-size: 12.5px; font-weight: 600; color: var(--muted); }
+.link-acts button.warn { color: var(--danger); }
+
 .cat-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .cat-cell {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
@@ -932,6 +997,16 @@ button:focus-visible, a:focus-visible {
 }
 .cat-cell .ci { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; }
 .cat-cell.on { border-color: currentColor; }
+
+/* 行程表單的分類選單壓縮並改用品牌色選中態；記帳的分類格維持原樣 */
+.itin-form .cat-cell { padding: 8px 4px; gap: 5px; border: 2px solid var(--line); }
+.itin-form .cat-cell .ci { width: 31px; height: 31px; border-radius: 10px; }
+.itin-form .cat-cell.on { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+@media (max-width: 340px) {
+  .itin-form .cat-grid { display: flex; overflow-x: auto; scrollbar-width: none; }
+  .itin-form .cat-grid::-webkit-scrollbar { display: none; }
+  .itin-form .cat-cell { flex: 0 0 66px; }
+}
 
 .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 16px; }
 .key {

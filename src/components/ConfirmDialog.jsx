@@ -3,7 +3,7 @@ import { useStore } from '../store'
 
 export default function ConfirmDialog() {
   const { confirmState, closeConfirm } = useStore()
-  const { open, title, message, confirmText, onConfirm } = confirmState
+  const { open, title, message, confirmText, confirmIcon = 'trash', cancelText = '取消', onConfirm } = confirmState
   if (!open) return null
 
   const go = () => {
@@ -24,10 +24,10 @@ export default function ConfirmDialog() {
           style={{ marginTop: 12, background: 'var(--danger-soft)', color: 'var(--danger)' }}
           onClick={go}
         >
-          <Icon name="trash" size={17} /> {confirmText}
+          <Icon name={confirmIcon} size={17} /> {confirmText}
         </button>
         <button className="btn btn-block" style={{ marginTop: 10, color: 'var(--muted)' }} onClick={closeConfirm}>
-          取消
+          {cancelText}
         </button>
       </div>
     </div>

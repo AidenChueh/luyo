@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import Icon from '../components/Icon'
 import { ITIN_CAT } from '../data/seed'
@@ -135,10 +135,17 @@ export default function ItineraryScreen() {
   const { trips, getTrip, getItinerary, openItin, copyItinDay } = useStore()
   const trip = (id && getTrip(id)) || trips.find((t) => t.status === 'ongoing') || trips[0]
   const [day, setDay] = useState(() => Math.min(trip?.currentDay || 1, trip?.days || 1))
+  const [copyOpen, setCopyOpen] = useState(false)
+  const [copyTo, setCopyTo] = useState(null)
+  const dayRefs = useRef({})
 
   useEffect(() => {
     setDay(Math.min(trip?.currentDay || 1, trip?.days || 1))
   }, [id])
+
+  useEffect(() => {
+    dayRefs.current[day]?.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' })
+  }, [day])
 
   if (!trip) return null
   const data = getItinerary(trip.id)
@@ -155,16 +162,25 @@ export default function ItineraryScreen() {
   const dayCost = items.reduce((s, it) => s + (it.act || it.est || 0), 0)
   const dayNums = Array.from({ length: trip.days }, (_, i) => i + 1)
 
-  const copyDay = () => {
-    if (day >= trip.days) { alert('已經是最後一天'); return }
-    copyItinDay(trip.id, day, day + 1)
-    setDay(day + 1)
+  const dateOf = (d) => { const dt = parseYMD(trip.start); dt.setDate(dt.getDate() + d - 1); return dt }
+  const dayLabel = (d) => { const dt = dateOf(d); return `${dt.getMonth() + 1}/${dt.getDate()}` }
+
+  const openCopy = () => {
+    setCopyTo(dayNums.find((d) => d !== day) ?? null)
+    setCopyOpen(true)
+  }
+  const doCopy = () => {
+    if (!copyTo) return
+    copyItinDay(trip.id, day, copyTo)
+    setCopyOpen(false)
+    setDay(copyTo)
   }
 
   return (
+    <>
     <div className="scroll">
-      <header className="topbar solid">
-        <button className="iconbtn ghost" onClick={() => nav(`/trip/${trip.id}`)} aria-label="返回"><Icon name="chevronLeft" size={22} /></button>
+      <header className="topbar solid tight">
+        <button className="iconbtn" onClick={() => nav(`/trip/${trip.id}`)} aria-label="返回"><Icon name="chevronLeft" size={20} /></button>
         <div>
           <div className="greeting">{trip.city} · {trip.sym} {trip.currency}</div>
           <h1>行程規劃</h1>
@@ -173,18 +189,19 @@ export default function ItineraryScreen() {
         <button className="iconbtn" onClick={() => openItin(trip.id, day)} aria-label="新增行程"><Icon name="plus" size={20} /></button>
       </header>
 
-      <div className="pad" style={{ marginTop: 6 }}>
+      <div className="pad" style={{ marginTop: 8 }}>
         <div className="daybar">
-          {dayNums.map((d) => {
-            const dt = parseYMD(trip.start); dt.setDate(dt.getDate() + d - 1)
-            const n = (data[d] || []).length
-            return (
-              <button key={d} className={`daypill ${day === d ? 'active' : ''}`} onClick={() => setDay(d)}>
-                <div className="d">DAY {d}</div>
-                <div className="n">{dt.getMonth() + 1}/{dt.getDate()}</div>
-              </button>
-            )
-          })}
+          {dayNums.map((d) => (
+            <button
+              key={d}
+              ref={(el) => { dayRefs.current[d] = el }}
+              className={`daypill ${day === d ? 'active' : ''}`}
+              onClick={() => setDay(d)}
+            >
+              <div className="d">DAY {d}</div>
+              <div className="n">{dayLabel(d)}</div>
+            </button>
+          ))}
         </div>
       </div>
 
@@ -194,19 +211,21 @@ export default function ItineraryScreen() {
       </div>
       */}
 
-      <div className="pad section" style={{ marginTop: 16 }}>
+      <div className="pad" style={{ marginTop: 16 }}>
         <div className="between" style={{ marginBottom: 14 }}>
           <div className="muted" style={{ fontSize: 13, fontWeight: 600 }}>{items.length} 個行程</div>
           <div className="row" style={{ gap: 6, fontSize: 13, fontWeight: 700 }}>
             <Icon name="wallet" size={15} style={{ color: 'var(--muted)' }} />
-            當日預估 {money(dayCost, '')}
+            當日預估 {money(dayCost, trip.sym)}
           </div>
         </div>
 
         {items.length === 0 ? (
-          <div className="card" style={{ padding: 28, textAlign: 'center', color: 'var(--muted)' }}>
-            <Icon name="calendar" size={30} style={{ color: 'var(--line-strong)' }} />
-            <div style={{ marginTop: 8, fontSize: 13.5 }}>還沒有行程，點下方「加行程」新增</div>
+          <div className="itin-empty">
+            <div className="t">今天還沒有行程</div>
+            <button className="a" onClick={() => openItin(trip.id, day)}>
+              <Icon name="plus" size={16} /> 新增第一個行程
+            </button>
           </div>
         ) : (
           <div className="timeline">
@@ -218,7 +237,11 @@ export default function ItineraryScreen() {
               return (
                 <div key={it.id}>
                   <div className="tl-item fade-up" style={{ animationDelay: `${idx * 0.04}s` }}>
-                    <div className="tl-time">{it.start}<small>{it.end}</small></div>
+                    <div className="tl-time">
+                      <b>{it.start}</b>
+                      <i className="tick" />
+                      <small>{it.end}</small>
+                    </div>
                     <div className="tl-rail">
                       <span className="tl-dot" style={{ background: c.color }} />
                       {idx < items.length - 1 && <span className="tl-line" />}
@@ -253,7 +276,7 @@ export default function ItineraryScreen() {
                             <Icon name="mapPin" size={14} /> Google Maps
                           </a>
                         ) : <span />}
-                        <span className="cost">{it.act ? money(it.act, '') : it.est ? `預估 ${money(it.est, '')}` : '—'}</span>
+                        <span className="cost">{it.act ? money(it.act, trip.sym) : it.est ? `預估 ${money(it.est, trip.sym)}` : '—'}</span>
                       </div>
                     </div>
                   </div>
@@ -268,15 +291,47 @@ export default function ItineraryScreen() {
           </div>
         )}
 
-        <div className="row" style={{ gap: 10, marginTop: 14 }}>
-          <button className="btn btn-ghost" style={{ flex: 1 }} onClick={copyDay} disabled={items.length === 0}>
-            <Icon name="copy" size={17} /> 複製到隔天
+        <div className="row" style={{ gap: 12, marginTop: 24 }}>
+          <button className="btn btn-outline" style={{ flex: 1 }} onClick={openCopy} disabled={items.length === 0}>
+            <Icon name="copy" size={16} /> 複製當日行程
           </button>
-          <button className="btn btn-primary" style={{ flex: 1 }} onClick={() => openItin(trip.id, day)}>
+          <button className="btn btn-primary" style={{ flex: 1.3 }} onClick={() => openItin(trip.id, day)}>
             <Icon name="plus" size={18} /> 加行程
           </button>
         </div>
       </div>
     </div>
+
+    {copyOpen && (
+      <div className="sheet-overlay" onClick={() => setCopyOpen(false)}>
+        <div className="sheet form-sheet" onClick={(e) => e.stopPropagation()}>
+          <div className="grabber" />
+          <div className="sheet-head">
+            <button className="iconbtn" onClick={() => setCopyOpen(false)} aria-label="關閉"><Icon name="chevronLeft" size={20} /></button>
+            <div className="t">複製到</div>
+            <span style={{ width: 40 }} />
+          </div>
+          <div style={{ marginTop: 14 }}>
+            {dayNums.filter((d) => d !== day).map((d) => (
+              <button
+                key={d}
+                className={`pick-row ${copyTo === d ? 'on' : ''}`}
+                role="radio"
+                aria-checked={copyTo === d}
+                onClick={() => setCopyTo(d)}
+              >
+                <span className="rd">{copyTo === d && <Icon name="check" size={13} />}</span>
+                DAY {d} · {dayLabel(d)}
+                <span className="sub">{(data[d] || []).length} 個行程</span>
+              </button>
+            ))}
+          </div>
+          <button className="btn btn-primary btn-block" style={{ marginTop: 24 }} onClick={doCopy} disabled={!copyTo}>
+            複製行程
+          </button>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
